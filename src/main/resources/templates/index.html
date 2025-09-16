@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Spring Boot 投注游戏</title>
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        .container { max-width: 600px; margin: 2rem auto; padding: 20px; }
+        .balance { font-size: 1.5rem; color: #2ecc71; margin: 1rem 0; }
+        input[type="number"] { padding: 0.8rem; width: 200px; }
+        button { padding: 0.8rem 1.5rem; background: #3498db; color: white; border: none; }
+        #result { margin-top: 1rem; min-height: 2rem; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>幸运投注游戏（3%赔率）</h1>
+    <div class="balance">
+        庄家余额: ¥<span id="bankerBalance" th:text="${#numbers.formatDecimal(bankerBalance, 1, 2)}">10000.00</span>
+        <br/>
+        玩家余额: ¥<span id="balance" th:text="${#numbers.formatDecimal(balance, 1, 2)}">1000.00</span>
+    </div>
+
+    <div class="bet-form">
+        <input type="number" id="amount" step="0.01" min="0.01" placeholder="输入投注金额">
+        <button onclick="placeBet()">立即投注</button>
+        <button onclick="autoBet()">自动投注</button>
+    </div>
+
+    <div id="result"></div>
+</div>
+
+<script>
+    function placeBet() {
+        const amount = document.getElementById('amount').value;
+
+        fetch('/bet', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: 'amount=' + encodeURIComponent(amount)
+        })
+            .then(response => response.json())
+            .then(data => {
+                const resultDiv = document.getElementById('result');
+                if (data.success) {
+                    document.getElementById('balance').textContent =
+                        data.balance.toFixed(2);
+                    resultDiv.innerHTML = `<div class="${data.message.includes('获胜') ?
+                        'text-success' : 'text-danger'}">${data.message}</div>`;
+                } else {
+                    resultDiv.innerHTML = `<div class="text-warning">${data.message}</div>`;
+                }
+                document.getElementById('bankerBalance').textContent =
+                    data.bankerBalance.toFixed(2);
+            })
+            .catch(error => console.error('Error:', error));
+    }
+
+    function autoBet(){
+        setInterval(placeBet,1000);
+    }
+</script>
+</body>
+</html>
