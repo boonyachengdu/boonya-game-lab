@@ -56,7 +56,7 @@ spec:
       targetPort: 8080 # 容器端口
   # type: ClusterIP # 默认类型，集群内访问IP
   #------云提供商LoadBalancer 才会生成EXTERNAL-IP
-  type: LoadBalancer # 如果希望从集群外部访问，可以使用LoadBalancer（云提供商通常支持）或NodePort
+  type: NodePort # 如果希望从集群外部访问，可以使用LoadBalancer（云提供商通常支持）或NodePort(建议本地 长期使用时)
   #------云环境打开上面type: LoadBalancer 注释
   # 获取浏览器访问IP地址方式
   # kubectl get svc boonya-game-lab-service
