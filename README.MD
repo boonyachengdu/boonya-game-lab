@@ -36,6 +36,12 @@
 
 `kubectl delete -f deployment.yaml`
 
+Get browser visit IP:
+
+`kubectl get svc boonya-game-lab-service`
+
+`kubectl get svc boonya-game-lab-service -w`
+
 # k8s dashboard  kuboard
 
 **database support Mysql/MariaDB /OpenGauss**
