@@ -1,5 +1,11 @@
 # Getting Started
 
+## What is this?
+
+This is a demo for data lake.
+
+![Architecture](./images/CDC-kafka-spark-MinIo.png)
+
 ### Bigdata techs
 
 #### CDC
