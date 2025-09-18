@@ -1,20 +1,32 @@
 # Getting Started
 
+### Bigdata techs
+
+* CDC
+- Canal
+- Presto/Trino 
+
+* Stream frameworks
+- Apache Kafka
+- Apache Spark
+
+### Bigdata database choices
+
+MinIo for local data lake first, if you don't put it on clouds.
+
 ### Reference Documentation
 
 For further reference, please consider the following sections:
 
 * [Official Apache Maven documentation](https://maven.apache.org/guides/index.html)
-* [Spring Boot Maven Plugin Reference Guide](https://docs.spring.io/spring-boot/3.4.4/maven-plugin)
-* [Create an OCI image](https://docs.spring.io/spring-boot/3.4.4/maven-plugin/build-image.html)
-* [Thymeleaf](https://docs.spring.io/spring-boot/3.4.4/reference/web/servlet.html#web.servlet.spring-mvc.template-engines)
-* [Spring Web](https://docs.spring.io/spring-boot/3.4.4/reference/web/servlet.html)
+* [Spring Boot Maven Plugin Reference Guide](https://docs.spring.io/spring-boot/3.5.5/maven-plugin)
+* [Create an OCI image](https://docs.spring.io/spring-boot/3.5.5/maven-plugin/build-image.html)
+* [Spring Web](https://docs.spring.io/spring-boot/3.5.5/reference/web/servlet.html)
 
 ### Guides
 
 The following guides illustrate how to use some features concretely:
 
-* [Handling Form Submission](https://spring.io/guides/gs/handling-form-submission/)
 * [Building a RESTful Web Service](https://spring.io/guides/gs/rest-service/)
 * [Serving Web Content with Spring MVC](https://spring.io/guides/gs/serving-web-content/)
 * [Building REST services with Spring](https://spring.io/guides/tutorials/rest/)
