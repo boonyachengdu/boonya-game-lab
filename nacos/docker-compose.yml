@@ -1,0 +1,22 @@
+#  Nacos 的官方 Docker 镜像支持通过环境变量来覆盖默认的认证配置。最关键的两个环境变量是：
+#  NACOS_AUTH_ENABLE: 是否开启认证，设置为 true 来开启。
+#  NACOS_AUTH_TOKEN: 用于生成 JWT Token 的密钥。注意：如果使用默认值，存在安全风险！
+#  NACOS_AUTH_IDENTITY_KEY: 身份识别的 Key。
+#  NACOS_AUTH_IDENTITY_VALUE: 身份识别的 Value。
+#  http://localhost:8848/  default  nacos/nacos
+version: '3'
+services:
+  nacos:
+    image: nacos/nacos-server:latest
+    container_name: nacos-standalone
+    environment:
+      - MODE=standalone
+      - NACOS_AUTH_ENABLE=true # 核心：开启认证
+      - NACOS_AUTH_IDENTITY_KEY=nacos # 身份识别用户名
+      - NACOS_AUTH_IDENTITY_VALUE=nacos123 # 身份识别的密码
+    ports:
+      - "8848:8848"
+    volumes:
+      # 可选：持久化数据
+      - ./standalone-logs/:/home/nacos/logs
+      - ./data/:/home/nacos/data
