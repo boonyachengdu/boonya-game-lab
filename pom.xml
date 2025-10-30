@@ -26,7 +26,8 @@
     <modules>
         <module>boonya-game-ai</module>
         <module>boonya-game-bigdata</module>
-        <module>boonya-game-jmh</module>
+       <!-- <module>boonya-game-jmh</module>-->
+        <module>boonya-game-langchain4j</module>
     </modules>
 
     <dependencyManagement>
