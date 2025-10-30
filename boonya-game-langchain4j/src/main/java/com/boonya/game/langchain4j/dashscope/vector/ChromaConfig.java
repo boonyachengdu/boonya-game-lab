@@ -1,20 +1,28 @@
-package com.boonya.game.langchain4j.dashscope.config;
+package com.boonya.game.langchain4j.dashscope.vector;
 
 import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.store.embedding.EmbeddingStore;
 import dev.langchain4j.store.embedding.chroma.ChromaEmbeddingStore;
 import dev.langchain4j.store.embedding.inmemory.InMemoryEmbeddingStore;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.Duration;
+
+@Data
+@ConditionalOnProperty(name = "vector.store", havingValue = "chroma")
 @Configuration
+@ConfigurationProperties(prefix = "chroma")
 @Slf4j
 public class ChromaConfig {
-    private static final String CHROMA_URL = "http://localhost:8000";
-    private static final String COLLECTION_NAME = "document_embeddings";
+    private String url;
+    private String collection;
 
     @Bean
     public EmbeddingStore<TextSegment> embeddingStore() {
@@ -34,7 +42,7 @@ public class ChromaConfig {
             log.warn("标准配置失败，尝试备用配置: {}", e1.getMessage());
 
             try {
-                // 方案 2: 备用配置
+                // 方案 2: 备用配置ss
                 return createFallbackChromaStore();
 
             } catch (Exception e2) {
@@ -47,7 +55,7 @@ public class ChromaConfig {
     private boolean testChromaAvailability() {
         try {
             RestTemplate restTemplate = new RestTemplate();
-            String response = restTemplate.getForObject(CHROMA_URL + "/api/v1/heartbeat", String.class);
+            String response = restTemplate.getForObject(url + "/api/v2/heartbeat", String.class);
             log.info("✅ Chroma 服务可用: {}", response);
             return true;
         } catch (Exception e) {
@@ -60,8 +68,9 @@ public class ChromaConfig {
         log.info("尝试标准 Chroma 配置...");
 
         ChromaEmbeddingStore store = ChromaEmbeddingStore.builder()
-                .baseUrl(CHROMA_URL)
-                .collectionName(COLLECTION_NAME)
+                .timeout(Duration.ofMillis(15000))
+                .baseUrl(url)
+                .collectionName(collection)
                 .build();
 
         log.info("✅ 标准 Chroma 配置成功");
@@ -82,8 +91,8 @@ public class ChromaConfig {
         // 有些版本可能不支持直接设置 RestTemplate
 
         ChromaEmbeddingStore store = ChromaEmbeddingStore.builder()
-                .baseUrl(CHROMA_URL)
-                .collectionName(COLLECTION_NAME)
+                .baseUrl(url)
+                .collectionName(collection)
                 .build();
 
         log.info("✅ 备用 Chroma 配置成功");
