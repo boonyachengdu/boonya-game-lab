@@ -1,0 +1,28 @@
+# src/main/resources/application.yml
+spring:
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+  thymeleaf:
+    cache: false
+    prefix: classpath:/templates/
+  web:
+    resources:
+      static-locations: classpath:/static/
+
+# 阿里百炼 api-key 注意不要泄漏 给自己造成损失
+# 建议您把API Key配置到环境变量，从而避免在代码里显式地配置API Key，降低泄漏风险。
+dashscope:
+  api-key: "your-actual-dashscope-api-key"
+
+chroma:
+  url: "http://localhost:8000"
+  collection-name: "document_embeddings"
+
+server:
+  port: 8080
+
+# 文件上传配置
+app:
+  upload-dir: "uploads"
