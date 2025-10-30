@@ -18,7 +18,19 @@ dashscope:
 
 chroma:
   url: "http://localhost:8000"
-  collection-name: "document_embeddings"
+  collection: "document_embeddings"
+
+milvus:
+  host: "localhost"
+  port: 19530
+  collection: "document_embeddings"
+
+elasticsearch:
+  url: "http://localhost:9200"
+  index: "document_embeddings"
+
+vector:
+  store: "chroma"
 
 server:
   port: 8080

@@ -50,12 +50,18 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
-        <!-- 或者使用其他向量数据库 -->
-        <!-- <dependency>
+        <!-- 使用milvus向量数据库 -->
+         <dependency>
             <groupId>dev.langchain4j</groupId>
             <artifactId>langchain4j-milvus</artifactId>
             <version>0.31.0</version>
-        </dependency> -->
+        </dependency>
+        <!-- 使用ElasticSearch -->
+        <dependency>
+            <groupId>dev.langchain4j</groupId>
+            <artifactId>langchain4j-elasticsearch</artifactId>
+            <version>0.31.0</version>
+        </dependency>
     </dependencies>
 
 
