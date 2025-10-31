@@ -14,7 +14,8 @@ spring:
 # 阿里百炼 api-key 注意不要泄漏 给自己造成损失
 # 建议您把API Key配置到环境变量，从而避免在代码里显式地配置API Key，降低泄漏风险。
 dashscope:
-  api-key: "your-actual-dashscope-api-key"
+  # 下面的api-key是测试用的，请勿用于生产环境，请自行申请。
+  api-key: "sk-782342483947374347854533"
 
 chroma:
   url: "http://localhost:8000"

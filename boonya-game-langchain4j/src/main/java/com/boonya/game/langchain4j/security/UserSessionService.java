@@ -1,4 +1,4 @@
-package com.boonya.game.langchain4j.dashscope.security;
+package com.boonya.game.langchain4j.security;
 
 // UserSessionService.java
 import com.boonya.game.langchain4j.dashscope.memory.ConversationMemoryService;

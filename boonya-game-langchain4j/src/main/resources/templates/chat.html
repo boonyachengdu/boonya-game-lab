@@ -53,17 +53,17 @@
                 </div>
 
                 <div class="session-list">
-                    <div th:each="session : ${sessions}" class="session-item">
+                    <div th:each="userSession : ${sessions}" class="session-item">
                         <div class="d-flex justify-content-between align-items-start">
-                            <a th:href="@{/chat(sessionId=${session.sessionId})}"
-                               class="session-link" th:classappend="${sessionId == session.sessionId} ? 'active' : ''">
-                                <small class="d-block">会话 <span th:text="${session.sessionId.substring(0,8)}">ID</span></small>
-                                <small class="text-muted" th:text="${'消息: ' + session.messageCount}">消息: 0</small>
+                            <a th:href="@{/chat(sessionId=${userSession.sessionId})}"
+                               class="session-link" th:classappend="${sessionId == userSession.sessionId} ? 'active' : ''">
+                                <small class="d-block">会话 <span th:text="${userSession.sessionId.substring(0,8)}">ID</span></small>
+                                <small class="text-muted" th:text="${'消息: ' + userSession.messageCount}">消息: 0</small>
                             </a>
                             <form th:action="@{/end-session}" method="post" class="session-actions">
-                                <input type="hidden" name="sessionId" th:value="${session.sessionId}">
+                                <input type="hidden" name="sessionId" th:value="${userSession.sessionId}">
                                 <button type="submit" class="btn btn-sm btn-outline-danger"
-                                        th:disabled="${sessionId == session.sessionId}">
+                                        th:disabled="${sessionId == userSession.sessionId}">
                                     <i class="fas fa-times"></i>
                                 </button>
                             </form>

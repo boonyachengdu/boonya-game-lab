@@ -1,34 +1,48 @@
 package com.boonya.game.langchain4j.dashscope.controller;
 
-// WebController.java
 import com.boonya.game.langchain4j.dashscope.document.DocumentProcessingService;
-import com.boonya.game.langchain4j.dashscope.security.UserSessionService;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import com.boonya.game.langchain4j.dashscope.memory.ConversationMemoryService;
+import com.boonya.game.langchain4j.dashscope.rag.RAGService;
+import com.boonya.game.langchain4j.security.UserSessionService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Controller
 public class WebController {
+
+    private final RAGService ragService;
     private final DocumentProcessingService documentService;
     private final UserSessionService userSessionService;
+    private final ConversationMemoryService memoryService;
 
     // 文件上传目录
     private final Path uploadDir = Paths.get("uploads");
 
-    public WebController(DocumentProcessingService documentService,
-                         UserSessionService userSessionService) {
+    public WebController(RAGService ragService,
+                         DocumentProcessingService documentService,
+                         UserSessionService userSessionService,
+                         ConversationMemoryService memoryService) {
+        this.ragService = ragService;
         this.documentService = documentService;
         this.userSessionService = userSessionService;
+        this.memoryService = memoryService;
 
         // 创建上传目录
         try {
@@ -36,6 +50,14 @@ public class WebController {
         } catch (IOException e) {
             throw new RuntimeException("无法创建上传目录", e);
         }
+    }
+
+    /**
+     * 测试API面
+     */
+    @GetMapping("/test-api")
+    public String testApi(Model model) {
+        return "test-api";
     }
 
     /**
@@ -69,9 +91,9 @@ public class WebController {
             return "redirect:/chat?sessionId=" + sessionId;
         }
 
-        // 验证会话属于当前用户
-        UserSessionService.UserSession session = userSessionService.getSession(sessionId);
-        if (session == null || !session.getUsername().equals(username)) {
+        // 验证会话属于当前用户 - 使用 userSession 避免保留字冲突
+        UserSessionService.UserSession userSession = userSessionService.getSession(sessionId);
+        if (userSession == null || !userSession.getUsername().equals(username)) {
             return "redirect:/chat"; // 重新创建会话
         }
 
@@ -79,14 +101,14 @@ public class WebController {
 
         model.addAttribute("username", username);
         model.addAttribute("sessionId", sessionId);
-        model.addAttribute("messageCount", session.getMessageCount());
+        model.addAttribute("messageCount", userSession.getMessageCount());
 
         // 获取用户的所有会话
-        List<UserSessionService.UserSession> sessions = userSessionService.getUserSessions(username)
+        List<UserSessionService.UserSession> userSessions = userSessionService.getUserSessions(username)
                 .values().stream()
                 .sorted((s1, s2) -> Long.compare(s2.getLastActivityTime(), s1.getLastActivityTime()))
                 .collect(Collectors.toList());
-        model.addAttribute("sessions", sessions);
+        model.addAttribute("sessions", userSessions);
 
         return "chat";
     }
@@ -119,10 +141,11 @@ public class WebController {
 
             // 处理文档
             documentService.processDocument(filePath);
-
+            log.info("文件上传和处理成功!");
             return new UploadResponse("success", "文件上传和处理成功: " + file.getOriginalFilename());
 
         } catch (Exception e) {
+            log.error("文件上传失败", e);
             return new UploadResponse("error", "文件上传失败: " + e.getMessage());
         }
     }
