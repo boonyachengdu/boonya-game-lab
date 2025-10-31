@@ -1,0 +1,50 @@
+<!-- test-api.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API 测试页面</title>
+</head>
+<body>
+<h1>RAG API 测试</h1>
+
+<div>
+    <button onclick="testHealth()">测试健康检查</button>
+    <button onclick="testAsk()">测试问答接口</button>
+</div>
+
+<div id="result" style="margin-top: 20px; padding: 10px; border: 1px solid #ccc;"></div>
+
+<script>
+    async function testHealth() {
+        try {
+            const response = await fetch('/api/rag/health');
+            const data = await response.json();
+            document.getElementById('result').innerHTML =
+                '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+        } catch (error) {
+            document.getElementById('result').innerHTML =
+                '错误: ' + error.message;
+        }
+    }
+
+    async function testAsk() {
+        try {
+            const response = await fetch('/api/rag/ask', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'sessionId=test123&question=你好，这是一个测试问题'
+            });
+
+            const data = await response.json();
+            document.getElementById('result').innerHTML =
+                '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+        } catch (error) {
+            document.getElementById('result').innerHTML =
+                '错误: ' + error.message;
+        }
+    }
+</script>
+</body>
+</html>
