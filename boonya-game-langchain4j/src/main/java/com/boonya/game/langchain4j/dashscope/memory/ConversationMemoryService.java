@@ -1,11 +1,13 @@
+// ConversationMemoryService.java
 package com.boonya.game.langchain4j.dashscope.memory;
 
-// ConversationMemoryService.java
 import dev.langchain4j.memory.ChatMemory;
 import dev.langchain4j.memory.chat.MessageWindowChatMemory;
 import dev.langchain4j.data.message.AiMessage;
 import dev.langchain4j.data.message.UserMessage;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -13,7 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ConversationMemoryService {
 
     private final Map<String, ChatMemory> chatMemories = new ConcurrentHashMap<>();
-    private static final int MAX_MESSAGES = 10; // 保存最近10轮对话
+    private static final int MAX_MESSAGES = 10;
 
     /**
      * 获取或创建对话记忆
@@ -21,6 +23,16 @@ public class ConversationMemoryService {
     public ChatMemory getOrCreateMemory(String sessionId) {
         return chatMemories.computeIfAbsent(sessionId,
                 id -> MessageWindowChatMemory.withMaxMessages(MAX_MESSAGES));
+    }
+
+    /**
+     * 获取或创建对话记忆
+     */
+    public ChatMemory getOrCreateMemory(Object sessionId) {
+        if (StringUtils.isEmpty(sessionId) || sessionId == null) {
+            throw new RuntimeException("sessionId 不能为空");
+        }
+        return getOrCreateMemory(sessionId.toString());
     }
 
     /**
@@ -55,9 +67,5 @@ public class ConversationMemoryService {
             return "无历史对话";
         }
         return memory.messages().toString();
-    }
-
-    public ChatMemory getOrCreateMemory(Object sessionId) {
-        return getOrCreateMemory(sessionId.toString());
     }
 }
