@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boonya RAG MCP 测试页面</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            padding: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .panel {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            border: 1px solid #e9ecef;
+        }
+
+        .panel h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #3498db;
+        }
+
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #e74c3c;
+        }
+
+        .status-indicator.connected {
+            background: #2ecc71;
+        }
+
+        .btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        .btn:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        .btn-success {
+            background: #2ecc71;
+        }
+
+        .btn-success:hover {
+            background: #27ae60;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border 0.3s ease;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+            font-family: monospace;
+        }
+
+        .logs {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 6px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+        }
+
+        .log-entry {
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #34495e;
+        }
+
+        .log-time {
+            color: #95a5a6;
+            font-size: 12px;
+        }
+
+        .log-message {
+            word-break: break-all;
+        }
+
+        .log-sent {
+            color: #3498db;
+        }
+
+        .log-received {
+            color: #2ecc71;
+        }
+
+        .log-error {
+            color: #e74c3c;
+        }
+
+        .tool-item {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tool-item:hover {
+            border-color: #3498db;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .tool-name {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .tool-description {
+            color: #7f8c8d;
+            font-size: 13px;
+            margin-top: 5px;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 6px;
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            z-index: 1000;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            background: #2ecc71;
+        }
+
+        .notification.error {
+            background: #e74c3c;
+        }
+
+        .notification.info {
+            background: #3498db;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <a class="nav-link text-white" href="javascript:void(0)" onclick="chat()">
+        <span th:text="${username}">用户</span>
+        <i class="fas fa-comments me-1"></i>返回聊天
+    </a>
+    <div class="header">
+        <h1>Boonya RAG MCP 测试页面</h1>
+        <p>Model Context Protocol 测试客户端 - 用于测试 RAG 系统的 MCP 集成</p>
+    </div>
+
+    <div class="content">
+        <!-- 左侧：连接控制和工具 -->
+        <div class="panel">
+            <h2>连接控制</h2>
+
+            <div class="connection-status">
+                <div class="status-indicator" id="statusIndicator"></div>
+                <span id="statusText">未连接</span>
+            </div>
+
+            <div class="form-group">
+                <label for="serverUrl">MCP 服务器 URL</label>
+                <input type="text" id="serverUrl" value="ws://localhost:8080/mcpWebsocket" placeholder="输入 MCP 服务器 WebSocket URL">
+            </div>
+
+            <div>
+                <button class="btn btn-success" id="connectBtn">连接</button>
+                <button class="btn btn-danger" id="disconnectBtn" disabled>断开连接</button>
+                <button class="btn" id="initializeBtn" disabled>初始化</button>
+            </div>
+
+            <h2 style="margin-top: 30px;">可用工具</h2>
+            <div id="toolsList">
+                <div class="tool-item" data-tool="ask_question">
+                    <div class="tool-name">ask_question</div>
+                    <div class="tool-description">向 RAG 系统提问问题</div>
+                </div>
+                <div class="tool-item" data-tool="get_conversation_history">
+                    <div class="tool-name">get_conversation_history</div>
+                    <div class="tool-description">获取对话历史</div>
+                </div>
+                <div class="tool-item" data-tool="start_new_conversation">
+                    <div class="tool-name">start_new_conversation</div>
+                    <div class="tool-description">开始新的对话会话</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧：工具调用和日志 -->
+        <div class="panel">
+            <h2>工具调用</h2>
+
+            <div id="toolForms">
+                <!-- ask_question 表单 -->
+                <div id="ask_question_form" class="tool-form">
+                    <div class="form-group">
+                        <label for="sessionId">会话 ID</label>
+                        <input type="text" id="sessionId" readonly="readonly" th:value="${sessionId}">
+                    </div>
+                    <div class="form-group">
+                        <label for="question">问题</label>
+                        <textarea id="question" placeholder="输入您要提问的问题..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="promptType">提示类型</label>
+                        <select id="promptType">
+                            <option value="default">默认</option>
+                            <option value="detailed">详细</option>
+                            <option value="concise">简洁</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-success" onclick="callTool('ask_question')">提问</button>
+                </div>
+
+                <!-- get_conversation_history 表单 -->
+                <div id="get_conversation_history_form" class="tool-form" style="display: none;">
+                    <div class="form-group">
+                        <label for="historySessionId">会话 ID</label>
+                        <input type="text" id="historySessionId" placeholder="输入会话 ID">
+                    </div>
+                    <button class="btn btn-success" onclick="callTool('get_conversation_history')">获取历史</button>
+                </div>
+
+                <!-- start_new_conversation 表单 -->
+                <div id="start_new_conversation_form" class="tool-form" style="display: none;">
+                    <div class="form-group">
+                        <label for="newSessionId">会话 ID (可选)</label>
+                        <input type="text" id="newSessionId" placeholder="留空将自动生成">
+                    </div>
+                    <button class="btn btn-success" onclick="callTool('start_new_conversation')">开始新会话</button>
+                </div>
+            </div>
+
+            <h2 style="margin-top: 30px;">通信日志</h2>
+            <div class="logs" id="logs">
+                <div class="log-entry">
+                    <div class="log-time" id="currentTime"></div>
+                    <div class="log-message">等待连接...</div>
+                </div>
+            </div>
+
+            <div style="margin-top: 15px;">
+                <button class="btn" onclick="clearLogs()">清空日志</button>
+                <button class="btn" onclick="exportLogs()">导出日志</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="notification" class="notification"></div>
+
+<script>
+    // WebSocket 连接和状态管理
+    let ws = null;
+    let requestId = 1;
+    let currentTool = 'ask_question';
+
+    // 初始化页面
+    document.addEventListener('DOMContentLoaded', function() {
+        updateTime();
+        setInterval(updateTime, 1000);
+
+        // 设置工具点击事件
+        document.querySelectorAll('.tool-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const tool = this.getAttribute('data-tool');
+                selectTool(tool);
+            });
+        });
+
+        // 连接按钮事件
+        document.getElementById('connectBtn').addEventListener('click', connect);
+
+        // 断开连接按钮事件
+        document.getElementById('disconnectBtn').addEventListener('click', disconnect);
+
+        // 初始化按钮事件
+        document.getElementById('initializeBtn').addEventListener('click', initialize);
+
+        // 默认选择第一个工具
+        selectTool('ask_question');
+    });
+
+    // 更新当前时间
+    function updateTime() {
+        const now = new Date();
+        document.getElementById('currentTime').textContent = now.toLocaleString();
+    }
+
+    // 连接 WebSocket
+    function connect() {
+        const url = document.getElementById('serverUrl').value;
+
+        if (!url) {
+            showNotification('请输入服务器 URL', 'error');
+            return;
+        }
+
+        try {
+            ws = new WebSocket(url);
+
+            ws.onopen = function(event) {
+                updateStatus(true, '已连接');
+                showNotification('成功连接到 MCP 服务器', 'success');
+                logMessage('连接到: ' + url, 'info');
+
+                document.getElementById('connectBtn').disabled = true;
+                document.getElementById('disconnectBtn').disabled = false;
+                document.getElementById('initializeBtn').disabled = false;
+            };
+
+            ws.onclose = function(event) {
+                updateStatus(false, '连接已关闭');
+                showNotification('连接已关闭', 'info');
+                logMessage('连接关闭: ' + event.code + ' - ' + event.reason, 'info');
+
+                document.getElementById('connectBtn').disabled = false;
+                document.getElementById('disconnectBtn').disabled = true;
+                document.getElementById('initializeBtn').disabled = true;
+            };
+
+            ws.onerror = function(event) {
+                updateStatus(false, '连接错误');
+                showNotification('连接发生错误', 'error');
+                logMessage('连接错误', 'error');
+            };
+
+            ws.onmessage = function(event) {
+                logMessage(event.data, 'received');
+
+                try {
+                    const data = JSON.parse(event.data);
+
+                    // 处理初始化响应
+                    if (data.id === 1 && data.result) {
+                        showNotification('MCP 初始化成功', 'success');
+                    }
+
+                    // 处理工具调用响应
+                    if (data.result && data.result.content) {
+                        const content = data.result.content;
+                        if (Array.isArray(content) && content[0] && content[0].text) {
+                            showNotification('工具调用成功: ' + content[0].text.substring(0, 50) + '...', 'success');
+                        }
+                    }
+
+                    // 处理错误
+                    if (data.error) {
+                        showNotification('错误: ' + data.error.message, 'error');
+                    }
+                } catch (e) {
+                    console.error('解析消息失败:', e);
+                }
+            };
+
+        } catch (e) {
+            showNotification('连接失败: ' + e.message, 'error');
+            logMessage('连接异常: ' + e.message, 'error');
+        }
+    }
+
+    // 断开 WebSocket 连接
+    function disconnect() {
+        if (ws) {
+            ws.close();
+            ws = null;
+        }
+    }
+
+    // 初始化 MCP 连接
+    function initialize() {
+        if (!ws || ws.readyState !== WebSocket.OPEN) {
+            showNotification('请先连接到服务器', 'error');
+            return;
+        }
+
+        const message = {
+            jsonrpc: "2.0",
+            id: 1,
+            method: "initialize",
+            params: {
+                protocolVersion: "2024-11-05",
+                capabilities: {
+                    roots: {},
+                    sampling: {}
+                },
+                clientInfo: {
+                    name: "Boonya RAG Tester",
+                    version: "1.0.0"
+                }
+            }
+        };
+
+        sendMessage(message);
+    }
+
+    // 选择工具
+    function selectTool(tool) {
+        currentTool = tool;
+
+        // 更新工具列表样式
+        document.querySelectorAll('.tool-item').forEach(item => {
+            if (item.getAttribute('data-tool') === tool) {
+                item.style.borderColor = '#3498db';
+                item.style.backgroundColor = '#e3f2fd';
+            } else {
+                item.style.borderColor = '#e9ecef';
+                item.style.backgroundColor = 'white';
+            }
+        });
+
+        // 显示对应的表单
+        document.querySelectorAll('.tool-form').forEach(form => {
+            form.style.display = 'none';
+        });
+        document.getElementById(tool + '_form').style.display = 'block';
+    }
+
+    // 调用工具
+    function callTool(tool) {
+        if (!ws || ws.readyState !== WebSocket.OPEN) {
+            showNotification('请先连接到服务器并初始化', 'error');
+            return;
+        }
+
+        let message = {
+            jsonrpc: "2.0",
+            id: ++requestId,
+            method: "tools/call",
+            params: {
+                name: tool,
+                arguments: {}
+            }
+        };
+
+        // 根据工具类型设置参数
+        switch(tool) {
+            case 'ask_question':
+                const question = document.getElementById('question').value;
+                if (!question) {
+                    showNotification('请输入问题', 'error');
+                    return;
+                }
+                message.params.arguments = {
+                    question: question,
+                    sessionId: document.getElementById('sessionId').value || undefined,
+                    promptType: document.getElementById('promptType').value
+                };
+                break;
+
+            case 'get_conversation_history':
+                const sessionId = document.getElementById('historySessionId').value;
+                if (!sessionId) {
+                    showNotification('请输入会话 ID', 'error');
+                    return;
+                }
+                message.params.arguments = {
+                    sessionId: sessionId
+                };
+                break;
+
+            case 'start_new_conversation':
+                message.params.arguments = {
+                    sessionId: document.getElementById('newSessionId').value || undefined
+                };
+                break;
+        }
+
+        sendMessage(message);
+    }
+
+    // 发送消息
+    function sendMessage(message) {
+        if (ws && ws.readyState === WebSocket.OPEN) {
+            const jsonMessage = JSON.stringify(message, null, 2);
+            ws.send(jsonMessage);
+            logMessage(jsonMessage, 'sent');
+        } else {
+            showNotification('WebSocket 未连接', 'error');
+        }
+    }
+
+    // 更新连接状态
+    function updateStatus(connected, text) {
+        const indicator = document.getElementById('statusIndicator');
+        const statusText = document.getElementById('statusText');
+
+        if (connected) {
+            indicator.className = 'status-indicator connected';
+            statusText.textContent = text;
+        } else {
+            indicator.className = 'status-indicator';
+            statusText.textContent = text;
+        }
+    }
+
+    // 记录日志
+    function logMessage(message, type) {
+        const logs = document.getElementById('logs');
+        const logEntry = document.createElement('div');
+        logEntry.className = 'log-entry';
+
+        const time = document.createElement('div');
+        time.className = 'log-time';
+        time.textContent = new Date().toLocaleString();
+
+        const content = document.createElement('div');
+        content.className = 'log-message ' + (type === 'sent' ? 'log-sent' :
+            type === 'received' ? 'log-received' :
+                type === 'error' ? 'log-error' : '');
+
+        // 尝试格式化 JSON
+        try {
+            const parsed = JSON.parse(message);
+            content.textContent = JSON.stringify(parsed, null, 2);
+        } catch (e) {
+            content.textContent = message;
+        }
+
+        logEntry.appendChild(time);
+        logEntry.appendChild(content);
+        logs.appendChild(logEntry);
+
+        // 自动滚动到底部
+        logs.scrollTop = logs.scrollHeight;
+    }
+
+    // 清空日志
+    function clearLogs() {
+        document.getElementById('logs').innerHTML = '';
+        const time = document.createElement('div');
+        time.className = 'log-time';
+        time.textContent = new Date().toLocaleString();
+
+        const message = document.createElement('div');
+        message.className = 'log-message';
+        message.textContent = '日志已清空';
+
+        const entry = document.createElement('div');
+        entry.className = 'log-entry';
+        entry.appendChild(time);
+        entry.appendChild(message);
+
+        document.getElementById('logs').appendChild(entry);
+    }
+
+    // 导出日志
+    function exportLogs() {
+        const logs = document.getElementById('logs').innerText;
+        const blob = new Blob([logs], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'mcp-test-logs-' + new Date().toISOString().replace(/:/g, '-') + '.txt';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    // 显示通知
+    function showNotification(message, type) {
+        const notification = document.getElementById('notification');
+        notification.textContent = message;
+        notification.className = 'notification ' + type;
+        notification.classList.add('show');
+
+        setTimeout(() => {
+            notification.classList.remove('show');
+        }, 3000);
+    }
+</script>
+<script src="/js/common.js"></script>
+</body>
+</html>

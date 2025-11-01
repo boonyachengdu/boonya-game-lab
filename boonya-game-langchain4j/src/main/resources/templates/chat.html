@@ -23,11 +23,12 @@
                     <span th:text="${username}">用户</span>
                 </a>
                 <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="/documents"><i class="fas fa-file-upload me-2"></i>文档管理</a></li>
+                    <li><a id="goDocuments" class="dropdown-item" href="/documents"><i class="fas fa-file-upload me-2"></i>文档管理</a></li>
+                    <li><a id="goMcp" class="dropdown-item" href="/mcp"><i class="fas fa-file-upload me-2"></i>MCP测试</a></li>
                     <li><hr class="dropdown-divider"></li>
                     <li>
-                        <form th:action="@{/logout}" method="post">
-                            <button type="submit" class="dropdown-item">
+                        <form th:action="@{/logout}" method="post" onsubmit="logout()">
+                            <button type="submit" class="dropdown-item" >
                                 <i class="fas fa-sign-out-alt me-2"></i>退出登录
                             </button>
                         </form>
@@ -120,5 +121,6 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="/js/chat.js"></script>
+<script src="/js/common.js"></script>
 </body>
 </html>

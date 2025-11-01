@@ -53,14 +53,6 @@ public class WebController {
     }
 
     /**
-     * 测试API面
-     */
-    @GetMapping("/test-api")
-    public String testApi(Model model) {
-        return "test-api";
-    }
-
-    /**
      * 登录页面
      */
     @GetMapping("/login")
@@ -117,10 +109,33 @@ public class WebController {
      * 文档管理页面
      */
     @GetMapping("/documents")
-    public String documents(Model model) {
+    public String documents(Model model, @RequestParam(value = "sessionId", required = false) String sessionId) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         model.addAttribute("username", auth.getName());
+        model.addAttribute("sessionId", sessionId);
         return "documents";
+    }
+
+    /**
+     * 测试API功能
+     */
+    @GetMapping("/test-api")
+    public String testApi(Model model, @RequestParam(value = "sessionId", required = false) String sessionId) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        model.addAttribute("username", auth.getName());
+        model.addAttribute("sessionId", sessionId);
+        return "test-api";
+    }
+
+    /**
+     * 测试MCP功能
+     */
+    @GetMapping("/mcp")
+    public String testMcp(Model model, @RequestParam(value = "sessionId", required = false) String sessionId) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        model.addAttribute("username", auth.getName());
+        model.addAttribute("sessionId", sessionId);
+        return "mcp";
     }
 
     /**
