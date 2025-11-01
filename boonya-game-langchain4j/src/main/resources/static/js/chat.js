@@ -1,11 +1,18 @@
 // chat.js - 添加认证支持
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     const chatForm = document.getElementById('chatForm');
     const questionInput = document.getElementById('questionInput');
     const chatMessages = document.getElementById('chatMessages');
     const sendButton = document.getElementById('sendButton');
     const loadingSpinner = document.getElementById('loadingSpinner');
     const sessionId = document.getElementById('sessionId').value;
+
+    const goDocuments = document.getElementById('goDocuments');
+    goDocuments.href = goDocuments.href + "?sessionId=" + sessionId;
+
+    const goMcp=document.getElementById('goMcp');
+    goMcp.href = goMcp.href + "?sessionId=" + sessionId;
+
 
     console.log('Chat initialized with sessionId:', sessionId);
 
@@ -84,7 +91,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // 处理表单提交
-    chatForm.addEventListener('submit', async function(e) {
+    chatForm.addEventListener('submit', async function (e) {
         e.preventDefault();
 
         const question = questionInput.value.trim();
@@ -200,7 +207,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // 输入框回车发送
-    questionInput.addEventListener('keypress', function(e) {
+    questionInput.addEventListener('keypress', function (e) {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
             chatForm.dispatchEvent(new Event('submit'));

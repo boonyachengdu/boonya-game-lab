@@ -45,7 +45,7 @@
             <i class="fas fa-robot me-2"></i>RAG智能助手
         </a>
         <div class="navbar-nav ms-auto">
-            <a class="nav-link text-white" href="/chat">
+            <a class="nav-link text-white" href="javascript:void(0)" onclick="chat()">
                 <i class="fas fa-comments me-1"></i>返回聊天
             </a>
             <div class="nav-item dropdown">
@@ -56,7 +56,8 @@
                 </a>
                 <ul class="dropdown-menu">
                     <li>
-                        <form th:action="@{/logout}" method="post">
+                        <form th:action="@{/logout}" method="post" onclick="logout()">
+                            <input type="hidden" id="sessionId" th:value="${sessionId}">
                             <button type="submit" class="dropdown-item">
                                 <i class="fas fa-sign-out-alt me-2"></i>退出登录
                             </button>
@@ -73,7 +74,7 @@
         <div class="col-12">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h2><i class="fas fa-file-upload me-2"></i>文档管理</h2>
-                <a href="/chat" class="btn btn-outline-primary">
+                <a href="javascript:void(0)" class="btn btn-outline-primary" onclick="chat()">
                     <i class="fas fa-arrow-left me-1"></i>返回聊天
                 </a>
             </div>
@@ -237,5 +238,6 @@
         }
     });
 </script>
+<script src="/js/common.js"></script>
 </body>
 </html>

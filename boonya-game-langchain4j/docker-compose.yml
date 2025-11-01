@@ -1,0 +1,26 @@
+# docker-compose.yml
+version: '3.8'
+
+services:
+  boonya-rag:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - DASH_SCOPE_API_KEY=your-api-key
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped
+
+  # 可选：添加 Redis 用于生产环境会话存储
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+volumes:
+  redis_data:
