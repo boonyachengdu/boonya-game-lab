@@ -31,7 +31,7 @@ public class RAGConfig {
     @Value("${dashscope.api-key}")
     private String dashscopeApiKey;
 
-    @Value("${dashscope.model:qwen-turbo}")
+    @Value("${dashscope.request:qwen-turbo}")
     private String dashscopeModel;
 
     @Value("${dashscope.max-retries:3}")

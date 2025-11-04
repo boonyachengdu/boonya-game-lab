@@ -67,10 +67,17 @@ public class UserService {
     }
 
     /**
+     * 根据角色名称列表查找角色
+     */
+    private Set<Role> findRolesByIdIn(Set<Long> roleIds) {
+        return roleRepository.findByIdIn(roleIds);
+    }
+
+    /**
      * 创建新用户
      */
     @Transactional
-    public User createUser(String username, String password, String email, Set<String> roleNames) {
+    public User createUser(String username, String password, String email, Set<Long> roleIds) {
         log.info("开始创建用户: {}", username);
 
         if (userRepository.existsByUsername(username)) {
@@ -90,10 +97,10 @@ public class UserService {
         user.setCredentialsNonExpired(true);
 
         // 分配角色
-        if (roleNames != null && !roleNames.isEmpty()) {
-            Set<Role> roles = findRolesByNameIn(roleNames);
+        if (roleIds != null && !roleIds.isEmpty()) {
+            Set<Role> roles = findRolesByIdIn(roleIds);
             user.setRoles(roles);
-            log.debug("为用户 {} 分配角色: {}", username, roleNames);
+            log.debug("为用户 {} 分配角色: {}", username, roles);
         } else {
             // 默认分配 USER 角色
             Role userRole = roleRepository.findByName("USER")

@@ -1,7 +1,9 @@
 package com.metaforge.auth.controller;
 
+import com.metaforge.auth.entity.Role;
 import com.metaforge.auth.entity.User;
 import com.metaforge.auth.service.AuthService;
+import com.metaforge.auth.service.RoleService;
 import com.metaforge.auth.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -18,10 +20,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Controller
@@ -29,6 +29,9 @@ import java.util.Set;
 public class AuthController {
 
     private final UserService userManagementService;
+    private final RoleService roleService;
+    private static final String ADMIN_ROLE = "ADMIN";
+    private static final String USER_ROLE = "USER";
     private final AuthService authService;
 
     /**
@@ -147,14 +150,12 @@ public class AuthController {
             }
 
             // 创建用户
-            Set<String> roles = new HashSet<>();
-            roles.add("USER"); // 新用户默认分配 USER 角色
-
+            Set<Role> roles = roleService.getRolesByNameIn(Set.of(USER_ROLE));
             User newUser = userManagementService.createUser(
                     registerRequest.getUsername(),
                     registerRequest.getPassword(),
                     registerRequest.getEmail(),
-                    roles
+                    roles.stream().map(Role::getId).collect(Collectors.toSet())
             );
 
             log.info("新用户注册成功: {}", newUser.getUsername());

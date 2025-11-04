@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>角色管理 - MetaAuth</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    <link th:href="@{/css/admin.css}" rel="stylesheet">
+</head>
+<body>
+<!-- 头部导航 -->
+<div th:replace="fragments/admin-header :: header"></div>
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- 侧边栏 -->
+        <nav id="sidebar" class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
+            <div class="position-sticky pt-3">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/admin/users}">
+                            <i class="bi bi-people"></i>
+                            用户管理
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#">
+                            <i class="bi bi-shield-lock"></i>
+                            角色管理
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="bi bi-key"></i>
+                            权限管理
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- 主内容区 -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">角色管理</h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addRoleModal">
+                        <i class="bi bi-plus-circle"></i> 添加角色
+                    </button>
+                </div>
+            </div>
+
+            <!-- 搜索和筛选 -->
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <div class="input-group">
+                        <input type="text" id="searchInput" class="form-control" placeholder="搜索角色名称、描述...">
+                        <button class="btn btn-outline-secondary" type="button" id="searchBtn">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select" id="statusFilter">
+                        <option value="">全部状态</option>
+                        <option value="ACTIVE">启用</option>
+                        <option value="INACTIVE">禁用</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- 角色列表 -->
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="roleTable">
+                            <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>角色名称</th>
+                                <th>角色代码</th>
+                                <th>描述</th>
+                                <th>状态</th>
+                                <th>用户数量</th>
+                                <th>创建时间</th>
+                                <th>操作</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="role : ${roles}">
+                                <td th:text="${role.id}"></td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="role-icon me-2">
+                                            <i class="bi bi-shield-check text-primary"></i>
+                                        </div>
+                                        <strong th:text="${role.name}"></strong>
+                                    </div>
+                                </td>
+                                <td>
+                                    <code th:text="${role.code}"></code>
+                                </td>
+                                <td th:text="${role.description} ?: '无描述'"></td>
+                                <td>
+                                    <span th:if="${role.status == 'ACTIVE'}" class="badge bg-success">启用</span>
+                                    <span th:if="${role.status == 'INACTIVE'}" class="badge bg-secondary">禁用</span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-info" th:text="${role.userCount}"></span>
+                                </td>
+                                <td th:text="${#temporals.format(role.createTime, 'yyyy-MM-dd HH:mm')}"></td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <button class="btn btn-outline-primary"
+                                                th:onclick="|editRole(${role.id})|"
+                                                data-bs-toggle="tooltip" title="编辑">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <button class="btn btn-outline-info"
+                                                th:onclick="|viewRole(${role.id})|"
+                                                data-bs-toggle="tooltip" title="查看详情">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                        <button class="btn btn-outline-warning"
+                                                th:onclick="|managePermissions(${role.id})|"
+                                                data-bs-toggle="tooltip" title="权限管理">
+                                            <i class="bi bi-key"></i>
+                                        </button>
+                                        <button th:if="${role.status == 'ACTIVE'}"
+                                                class="btn btn-outline-warning"
+                                                th:onclick="|disableRole(${role.id})|"
+                                                data-bs-toggle="tooltip" title="禁用">
+                                            <i class="bi bi-pause-circle"></i>
+                                        </button>
+                                        <button th:if="${role.status == 'INACTIVE'}"
+                                                class="btn btn-outline-success"
+                                                th:onclick="|enableRole(${role.id})|"
+                                                data-bs-toggle="tooltip" title="启用">
+                                            <i class="bi bi-play-circle"></i>
+                                        </button>
+                                        <button th:if="${role.userCount == 0}"
+                                                class="btn btn-outline-danger"
+                                                th:onclick="|deleteRole(${role.id}, '${role.name}')|"
+                                                data-bs-toggle="tooltip" title="删除">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                        <button th:if="${role.userCount > 0}"
+                                                class="btn btn-outline-secondary"
+                                                data-bs-toggle="tooltip" title="有用户使用，无法删除" disabled>
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- 添加角色模态框 -->
+<div class="modal fade" id="addRoleModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">添加角色</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="addRoleForm" th:action="@{/admin/roles}" method="post">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="roleName" class="form-label">角色名称 *</label>
+                        <input type="text" class="form-control" id="roleName" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="roleCode" class="form-label">角色代码 *</label>
+                        <input type="text" class="form-control" id="roleCode" name="code" required>
+                        <div class="form-text">角色代码必须唯一，通常使用大写英文和下划线，如：ADMIN、USER_MANAGER</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="roleDescription" class="form-label">角色描述</label>
+                        <textarea class="form-control" id="roleDescription" name="description" rows="3"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">状态</label>
+                        <div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="status" id="roleStatusActive" value="ACTIVE" checked>
+                                <label class="form-check-label" for="roleStatusActive">启用</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="status" id="roleStatusInactive" value="INACTIVE">
+                                <label class="form-check-label" for="roleStatusInactive">禁用</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-primary">添加角色</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- 权限管理模态框 -->
+<div class="modal fade" id="permissionModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">权限管理 - <span id="currentRoleName"></span></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="permissionTree">
+                    <!-- 权限树形结构将通过JavaScript动态生成 -->
+                    <div class="text-center">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">加载中...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" onclick="savePermissions()">保存权限</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script th:src="@{/js/admin.js}"></script>
+</body>
+</html>

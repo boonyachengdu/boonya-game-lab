@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户管理 - MetaAuth</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    <link th:href="@{/css/admin.css}" rel="stylesheet">
+</head>
+<body>
+<!-- 头部导航 -->
+<div th:replace="fragments/admin-header :: header"></div>
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- 侧边栏 -->
+        <nav id="sidebar" class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
+            <div class="position-sticky pt-3">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#">
+                            <i class="bi bi-people"></i>
+                            用户管理
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/admin/roles}">
+                            <i class="bi bi-shield-lock"></i>
+                            角色管理
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="bi bi-key"></i>
+                            权限管理
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- 主内容区 -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">用户管理</h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addUserModal">
+                        <i class="bi bi-plus-circle"></i> 添加用户
+                    </button>
+                </div>
+            </div>
+
+            <!-- 搜索和筛选 -->
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <div class="input-group">
+                        <input type="text" id="searchInput" class="form-control" placeholder="搜索用户名、邮箱...">
+                        <button class="btn btn-outline-secondary" type="button" id="searchBtn">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select" id="statusFilter">
+                        <option value="">全部状态</option>
+                        <option value="ACTIVE">活跃</option>
+                        <option value="INACTIVE">禁用</option>
+                        <option value="LOCKED">锁定</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select" id="roleFilter">
+                        <option value="">全部角色</option>
+                        <option th:each="role : ${roles}" th:value="${role.id}" th:text="${role.name}"></option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- 用户列表 -->
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="userTable">
+                            <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>用户名</th>
+                                <th>邮箱</th>
+                                <th>手机号</th>
+                                <th>角色</th>
+                                <th>状态</th>
+                                <th>创建时间</th>
+                                <th>最后登录</th>
+                                <th>操作</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="user : ${users}">
+                                <td th:text="${user.id}"></td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <img th:src="${user.avatar ?: '/images/default-avatar.png'}"
+                                             class="rounded-circle me-2" width="32" height="32" alt="头像">
+                                        <span th:text="${user.username}"></span>
+                                    </div>
+                                </td>
+                                <td th:text="${user.email}"></td>
+                                <td th:text="${user.phone} ?: '未设置'"></td>
+                                <td>
+                                            <span th:each="role, stat : ${user.roles}"
+                                                  class="badge bg-secondary me-1"
+                                                  th:text="${role.name}"></span>
+                                </td>
+                                <td>
+                                            <span th:switch="${user.status}" class="badge">
+                                                <span th:case="ACTIVE" class="bg-success">活跃</span>
+                                                <span th:case="INACTIVE" class="bg-warning">禁用</span>
+                                                <span th:case="LOCKED" class="bg-danger">锁定</span>
+                                            </span>
+                                </td>
+                                <td th:text="${#temporals.format(user.createTime, 'yyyy-MM-dd HH:mm')}"></td>
+                                <td th:text="${user.lastLoginTime ? #temporals.format(user.lastLoginTime, 'yyyy-MM-dd HH:mm') : '从未登录'}"></td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <button class="btn btn-outline-primary"
+                                                th:onclick="|editUser(${user.id})|"
+                                                data-bs-toggle="tooltip" title="编辑">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <button class="btn btn-outline-info"
+                                                th:onclick="|viewUser(${user.id})|"
+                                                data-bs-toggle="tooltip" title="查看">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                        <button th:if="${user.status == 'ACTIVE'}"
+                                                class="btn btn-outline-warning"
+                                                th:onclick="|disableUser(${user.id})|"
+                                                data-bs-toggle="tooltip" title="禁用">
+                                            <i class="bi bi-pause-circle"></i>
+                                        </button>
+                                        <button th:if="${user.status == 'INACTIVE'}"
+                                                class="btn btn-outline-success"
+                                                th:onclick="|enableUser(${user.id})|"
+                                                data-bs-toggle="tooltip" title="启用">
+                                            <i class="bi bi-play-circle"></i>
+                                        </button>
+                                        <button class="btn btn-outline-danger"
+                                                th:onclick="|deleteUser(${user.id}, '${user.username}')|"
+                                                data-bs-toggle="tooltip" title="删除">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- 分页 -->
+                    <nav aria-label="用户列表分页">
+                        <ul class="pagination justify-content-center">
+                            <li class="page-item" th:classappend="${currentPage == 1} ? 'disabled'">
+                                <a class="page-link" th:href="@{/admin/users(page=1)}">首页</a>
+                            </li>
+                            <li class="page-item" th:classappend="${currentPage == 1} ? 'disabled'">
+                                <a class="page-link" th:href="@{/admin/users(page=${currentPage-1})}">上一页</a>
+                            </li>
+
+                            <li th:each="page : ${#numbers.sequence(1, totalPages)}"
+                                class="page-item" th:classappend="${page == currentPage} ? 'active'">
+                                <a class="page-link" th:href="@{/admin/users(page=${page})}" th:text="${page}"></a>
+                            </li>
+
+                            <li class="page-item" th:classappend="${currentPage == totalPages} ? 'disabled'">
+                                <a class="page-link" th:href="@{/admin/users(page=${currentPage+1})}">下一页</a>
+                            </li>
+                            <li class="page-item" th:classappend="${currentPage == totalPages} ? 'disabled'">
+                                <a class="page-link" th:href="@{/admin/users(page=${totalPages})}">末页</a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- 添加用户模态框 -->
+<div class="modal fade" id="addUserModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">添加用户</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="addUserForm" th:action="@{/admin/users}" method="post">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="username" class="form-label">用户名 *</label>
+                                <input type="text" class="form-control" id="username" name="username" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="email" class="form-label">邮箱 *</label>
+                                <input type="email" class="form-control" id="email" name="email" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="password" class="form-label">密码 *</label>
+                                <input type="password" class="form-control" id="password" name="password" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="confirmPassword" class="form-label">确认密码 *</label>
+                                <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="phone" class="form-label">手机号</label>
+                                <input type="tel" class="form-control" id="phone" name="phone">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">状态</label>
+                                <div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="status" id="statusActive" value="ACTIVE" checked>
+                                        <label class="form-check-label" for="statusActive">活跃</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="status" id="statusInactive" value="INACTIVE">
+                                        <label class="form-check-label" for="statusInactive">禁用</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">角色分配</label>
+                        <div th:each="role : ${roles}" class="form-check">
+                            <input class="form-check-input" type="checkbox" th:id="'role_' + ${role.id}"
+                                   th:value="${role.id}" name="roleIds">
+                            <label class="form-check-label" th:for="'role_' + ${role.id}" th:text="${role.name}"></label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-primary">添加用户</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script th:src="@{/js/admin.js}"></script>
+</body>
+</html>
