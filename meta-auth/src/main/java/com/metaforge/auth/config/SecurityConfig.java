@@ -1,6 +1,7 @@
 package com.metaforge.auth.config;
 
 import com.metaforge.auth.service.DbUserDetailsService;
+import com.metaforge.auth.utils.RoleTyeUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
@@ -38,7 +39,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/public/**", "/api/login", "/api/test/**").permitAll()
                         .requestMatchers("/mcp.html", "/api/rag/**").authenticated()
                         .requestMatchers("/chat", "/chat/**", "/documents").authenticated()
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/admin/**").hasRole(RoleTyeUtils.ROLE_ADMIN)
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form

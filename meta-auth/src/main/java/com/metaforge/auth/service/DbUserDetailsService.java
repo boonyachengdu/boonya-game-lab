@@ -31,7 +31,7 @@ public class DbUserDetailsService implements UserDetailsService {
 
         // 将用户角色转换为权限列表
         List<GrantedAuthority> authorities = user.getRoles().stream()
-                .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
+                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getName()))
                 .collect(Collectors.toList());
 
         // 返回UserDetails对象，密码应该是BCrypt加密后的

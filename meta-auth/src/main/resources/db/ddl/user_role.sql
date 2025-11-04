@@ -4,6 +4,9 @@ CREATE TABLE users (
                        username VARCHAR(50) UNIQUE NOT NULL,
                        password VARCHAR(255) NOT NULL,
                        email VARCHAR(100) UNIQUE,
+                       phone VARCHAR(32) DEFAULT NULL,
+                       avatar VARCHAR(255) DEFAULT 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y', VARCHAR(255) NOT NULL,
+                       status VARCHAR(50) DEFAULT 'ACTIVE',
                        enabled BOOLEAN DEFAULT TRUE,
                        account_non_expired BOOLEAN DEFAULT TRUE,
                        account_non_locked BOOLEAN DEFAULT TRUE,
@@ -20,8 +23,10 @@ CREATE INDEX idx_users_email ON users(email);
 -- 角色表
 CREATE TABLE roles (
                        id BIGSERIAL PRIMARY KEY,
-                       name VARCHAR(50) UNIQUE NOT NULL,
+                       name VARCHAR(50) NOT NULL,
+                       code VARCHAR(50) UNIQUE NOT NULL,
                        description VARCHAR(255),
+                       status VARCHAR(50) DEFAULT 'ACTIVE',
                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

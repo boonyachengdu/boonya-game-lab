@@ -109,7 +109,7 @@
                                 <td>
                                     <span class="badge bg-info" th:text="${role.userCount}"></span>
                                 </td>
-                                <td th:text="${#temporals.format(role.createTime, 'yyyy-MM-dd HH:mm')}"></td>
+                                <td th:text="${#temporals.format(role.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
                                 <td>
                                     <div class="btn-group btn-group-sm">
                                         <button class="btn btn-outline-primary"

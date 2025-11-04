@@ -37,6 +37,15 @@ public class User {
     @Column(unique = true, length = 100)
     private String email;
 
+    @Column(unique = true, length = 11)
+    private String phone;
+
+    @Column(length = 255)
+    private String avatar;
+
+    @Column(length = 50)
+    private String status;
+
     @Column(nullable = false)
     private Boolean enabled = true;
 

@@ -1,16 +1,21 @@
 package com.metaforge.auth.controller;
 
+import com.metaforge.auth.dto.request.LoginRequest;
+import com.metaforge.auth.dto.request.RegisterRequest;
 import com.metaforge.auth.entity.Role;
 import com.metaforge.auth.entity.User;
 import com.metaforge.auth.service.AuthService;
 import com.metaforge.auth.service.RoleService;
 import com.metaforge.auth.service.UserService;
+import com.metaforge.auth.utils.RoleTyeUtils;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -21,6 +26,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -28,10 +34,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final UserService userManagementService;
+    private final UserService userService;
     private final RoleService roleService;
-    private static final String ADMIN_ROLE = "ADMIN";
-    private static final String USER_ROLE = "USER";
     private final AuthService authService;
 
     /**
@@ -41,15 +45,12 @@ public class AuthController {
     public String showLoginPage(@RequestParam(value = "error", required = false) String error,
                                 @RequestParam(value = "logout", required = false) String logout,
                                 Model model) {
-
         if (error != null) {
             model.addAttribute("error", true);
         }
-
         if (logout != null) {
             model.addAttribute("logout", true);
         }
-
         return "login";
     }
 
@@ -77,11 +78,16 @@ public class AuthController {
             response.put("message", "Login successful");
             response.put("username", loginRequest.getUsername());
 
-            log.info("API login successful for user: {}", loginRequest.getUsername());
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            log.info("API login successful for user: {} {}", loginRequest.getUsername(), auth.getAuthorities());
+
+            userService.recordSuccessfulLogin(loginRequest.getUsername());
         } else {
             log.error("API login failed for user: {}", loginRequest.getUsername());
             response.put("success", false);
             response.put("message", "Login failed");
+
+            userService.recordFailedLogin(loginRequest.getUsername());
         }
 
         return ResponseEntity.ok(response);
@@ -132,13 +138,13 @@ public class AuthController {
 
         try {
             // 检查用户名是否已存在
-            if (userManagementService.usernameExists(registerRequest.getUsername())) {
+            if (userService.usernameExists(registerRequest.getUsername())) {
                 model.addAttribute("error", "用户名已存在");
                 return "register";
             }
 
             // 检查邮箱是否已存在
-            if (userManagementService.emailExists(registerRequest.getEmail())) {
+            if (userService.emailExists(registerRequest.getEmail())) {
                 model.addAttribute("error", "邮箱地址已被使用");
                 return "register";
             }
@@ -150,8 +156,8 @@ public class AuthController {
             }
 
             // 创建用户
-            Set<Role> roles = roleService.getRolesByNameIn(Set.of(USER_ROLE));
-            User newUser = userManagementService.createUser(
+            Set<Role> roles = roleService.getRolesByNameIn(Set.of(RoleTyeUtils.ROLE_USER));
+            User newUser = userService.createUser(
                     registerRequest.getUsername(),
                     registerRequest.getPassword(),
                     registerRequest.getEmail(),
@@ -197,68 +203,13 @@ public class AuthController {
         }
     }
 
-    public static class LoginRequest {
-        private String username;
-        private String password;
-
-        // Getters and Setters
-        public String getUsername() {
-            return username;
+    @GetMapping("/logout")
+    public String logout(HttpServletRequest request, HttpServletResponse response) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null) {
+            new SecurityContextLogoutHandler().logout(request, response, authentication);
         }
-
-        public void setUsername(String username) {
-            this.username = username;
-        }
-
-        public String getPassword() {
-            return password;
-        }
-
-        public void setPassword(String password) {
-            this.password = password;
-        }
+        return "redirect:/login?logout";
     }
 
-    /**
-     * 注册请求DTO
-     */
-    public static class RegisterRequest {
-        private String username;
-        private String email;
-        private String password;
-        private String confirmPassword;
-
-        // Getters and Setters
-        public String getUsername() {
-            return username;
-        }
-
-        public void setUsername(String username) {
-            this.username = username;
-        }
-
-        public String getEmail() {
-            return email;
-        }
-
-        public void setEmail(String email) {
-            this.email = email;
-        }
-
-        public String getPassword() {
-            return password;
-        }
-
-        public void setPassword(String password) {
-            this.password = password;
-        }
-
-        public String getConfirmPassword() {
-            return confirmPassword;
-        }
-
-        public void setConfirmPassword(String confirmPassword) {
-            this.confirmPassword = confirmPassword;
-        }
-    }
 }

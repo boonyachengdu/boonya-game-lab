@@ -24,9 +24,7 @@ public class IndexController {
     public String showIndexPage(Model model) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String username = auth.getName();
-
         model.addAttribute("username", username);
-        log.info("用户访问首页: {}", username);
 
         if (!auth.isAuthenticated() || "anonymousUser".equals(username)) {
             return "redirect:/login";
@@ -48,8 +46,6 @@ public class IndexController {
         userInfo.put("username", username);
         userInfo.put("roles", auth.getAuthorities());
         userInfo.put("authenticated", auth.isAuthenticated());
-
-        log.debug("获取用户信息: {}", username);
         return userInfo;
     }
 

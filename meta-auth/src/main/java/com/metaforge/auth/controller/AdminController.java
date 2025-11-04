@@ -7,27 +7,28 @@ import com.metaforge.auth.entity.User;
 import com.metaforge.auth.service.RoleService;
 import com.metaforge.auth.service.UserService;
 import jakarta.validation.Valid;
-import lombok.Data;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.Collections;
 import java.util.List;
 
 @Controller
 @RequestMapping("/admin")
+@RequiredArgsConstructor
 public class AdminController {
 
-    @Autowired
-    private UserService userService;
+    private final UserService userService;
 
-    @Autowired
-    private RoleService roleService;
+    private final RoleService roleService;
 
     /**
      * 用户管理页面
@@ -36,14 +37,26 @@ public class AdminController {
     public String userManagement(@RequestParam(defaultValue = "1") int page,
                                  @RequestParam(defaultValue = "10") int size,
                                  Model model) {
-        Pageable pageable = Pageable.ofSize(size).withPage(page - 1);
-        Page<User> userPage = userService.getUsers(pageable);
-        List<Role> roles = roleService.getAllRoles();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        model.addAttribute("username", authentication.getName());
+        try {
+            Pageable pageable = Pageable.ofSize(size).withPage(page - 1);
+            Page<User> userPage = userService.getUsers(pageable);
+            List<Role> roles = roleService.getAllRoles();
 
-        model.addAttribute("users", userPage.getContent());
-        model.addAttribute("currentPage", page);
-        model.addAttribute("totalPages", userPage.getTotalPages());
-        model.addAttribute("roles", roles);
+            model.addAttribute("users", userPage.getContent());
+            model.addAttribute("currentPage", page);
+            model.addAttribute("totalPages", userPage.getTotalPages());
+            model.addAttribute("roles", roles);
+        }catch (Exception e){
+            // 处理异常，确保模型属性不为空
+            model.addAttribute("users", Collections.emptyList());
+            model.addAttribute("currentPage", 1);
+            model.addAttribute("totalPages", 1);
+            model.addAttribute("totalElements", 0L);
+            model.addAttribute("roles", Collections.emptyList());
+            model.addAttribute("error", "加载用户数据失败: " + e.getMessage());
+        }
 
         return "admin/user";
     }

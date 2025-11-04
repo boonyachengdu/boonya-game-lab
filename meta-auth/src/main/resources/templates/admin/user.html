@@ -91,7 +91,7 @@
                                 <th>角色</th>
                                 <th>状态</th>
                                 <th>创建时间</th>
-                                <th>最后登录</th>
+                               <!-- <th>最后登录</th>-->
                                 <th>操作</th>
                             </tr>
                             </thead>
@@ -119,8 +119,8 @@
                                                 <span th:case="LOCKED" class="bg-danger">锁定</span>
                                             </span>
                                 </td>
-                                <td th:text="${#temporals.format(user.createTime, 'yyyy-MM-dd HH:mm')}"></td>
-                                <td th:text="${user.lastLoginTime ? #temporals.format(user.lastLoginTime, 'yyyy-MM-dd HH:mm') : '从未登录'}"></td>
+                                <td th:text="${#temporals.format(user.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
+                               <!-- <td th:text="${user.lastLogin ? #temporals.format(user.lastLogin, 'yyyy-MM-dd HH:mm') : '从未登录'}"></td>-->
                                 <td>
                                     <div class="btn-group btn-group-sm">
                                         <button class="btn btn-outline-primary"
