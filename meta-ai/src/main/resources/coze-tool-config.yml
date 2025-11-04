@@ -1,0 +1,21 @@
+# coze-tool-mode.yaml
+name: "meta-ai"
+description: "Document-based question answering using RAG"
+parameters:
+  type: "object"
+  properties:
+    session_id:
+      type: "string"
+      description: "Conversation session ID"
+    question:
+      type: "string"
+      description: "The question to ask"
+    prompt_type:
+      type: "string"
+      enum: ["default", "detailed", "concise"]
+      description: "Type of prompt to use"
+  required:
+    - "question"
+endpoint:
+  url: "http://localhost:8080/api/rag/ask"
+  method: "POST"

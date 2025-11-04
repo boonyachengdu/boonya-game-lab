@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录 - Boonya RAG 智能系统</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Animate.css -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --dark-bg: #0f0f23;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --text-light: #e9ecef;
+        }
+
+        body {
+            background: var(--dark-bg);
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            color: var(--text-light);
+            overflow-x: hidden;
+        }
+
+        .background-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background:
+                    radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                    radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.15) 0%, transparent 50%),
+                    radial-gradient(circle at 40% 40%, rgba(120, 219, 226, 0.1) 0%, transparent 50%);
+            animation: backgroundShift 20s ease-in-out infinite;
+        }
+
+        @keyframes backgroundShift {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.1) rotate(180deg); }
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .auth-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 2.5rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            transition: all 0.3s ease;
+        }
+
+        .auth-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 35px 60px -12px rgba(0, 0, 0, 0.6);
+        }
+
+        .logo-section {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            background: var(--primary-gradient);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .logo i {
+            font-size: 2rem;
+            color: white;
+        }
+
+        .brand-name {
+            font-size: 2rem;
+            font-weight: 700;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .brand-tagline {
+            color: #adb5bd;
+            font-size: 1rem;
+            margin-bottom: 0;
+        }
+
+        .form-floating {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-control {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: var(--text-light);
+            border-radius: 12px;
+            padding: 1rem 0.75rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(102, 126, 234, 0.6);
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+            color: var(--text-light);
+        }
+
+        .form-control::placeholder {
+            color: #adb5bd;
+        }
+
+        .form-label {
+            color: #adb5bd;
+        }
+
+        .btn-login {
+            background: var(--primary-gradient);
+            border: none;
+            border-radius: 12px;
+            padding: 1rem 2rem;
+            font-weight: 600;
+            font-size: 1.1rem;
+            width: 100%;
+            margin-top: 1rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-login:active {
+            transform: translateY(0);
+        }
+
+        .btn-login::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn-login:hover::before {
+            left: 100%;
+        }
+
+        .auth-footer {
+            text-align: center;
+            margin-top: 2rem;
+            color: #adb5bd;
+        }
+
+        .auth-link {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .auth-link:hover {
+            color: #764ba2;
+        }
+
+        .demo-accounts {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .demo-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #e9ecef;
+        }
+
+        .demo-account {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .demo-account:last-child {
+            border-bottom: none;
+        }
+
+        .demo-username {
+            font-weight: 500;
+        }
+
+        .demo-password {
+            color: #adb5bd;
+            font-family: monospace;
+        }
+
+        .copy-btn {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #adb5bd;
+            border-radius: 6px;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.8rem;
+            transition: all 0.3s ease;
+        }
+
+        .copy-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-light);
+        }
+
+        .alert {
+            border-radius: 12px;
+            border: none;
+        }
+
+        .floating-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .particle {
+            position: absolute;
+            background: rgba(102, 126, 234, 0.3);
+            border-radius: 50%;
+            animation: float 15s infinite linear;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100vh) rotate(360deg); opacity: 0; }
+        }
+
+        .feature-highlights {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 2rem;
+            text-align: center;
+        }
+
+        .feature {
+            flex: 1;
+            padding: 0 1rem;
+        }
+
+        .feature-icon {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: #667eea;
+        }
+
+        .feature-text {
+            font-size: 0.8rem;
+            color: #adb5bd;
+        }
+    </style>
+</head>
+<body>
+<!-- 背景动画 -->
+<div class="background-animation"></div>
+
+<!-- 浮动粒子 -->
+<div class="floating-particles" id="particles"></div>
+
+<div class="container">
+    <div class="login-container animate__animated animate__fadeIn">
+        <div class="auth-card">
+            <!-- Logo 和品牌 -->
+            <div class="logo-section">
+                <div class="logo">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <h1 class="brand-name">Boonya RAG</h1>
+                <p class="brand-tagline">智能文档问答系统</p>
+            </div>
+
+            <!-- 登录表单 -->
+            <form id="loginForm" th:action="@{/login}" method="post">
+                <!-- CSRF Token (用于传统表单提交) -->
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                
+                <!-- 动态错误提示 -->
+                <div id="errorAlert" class="alert alert-danger animate__animated animate__shakeX" style="display: none;">
+                    <i class="fas fa-exclamation-triangle me-2"></i><span id="errorMessage">用户名或密码错误</span>
+                </div>
+
+                <!-- 服务器端错误提示 -->
+                <div th:if="${param.error}" class="alert alert-danger animate__animated animate__shakeX">
+                    <i class="fas fa-exclamation-triangle me-2"></i>用户名或密码错误
+                </div>
+
+                <div th:if="${param.logout}" class="alert alert-success animate__animated animate__fadeIn">
+                    <i class="fas fa-check-circle me-2"></i>您已成功退出登录
+                </div>
+
+                <div class="form-floating">
+                    <input type="text" class="form-control" id="username" name="username" placeholder="用户名" required>
+                    <label for="username"><i class="fas fa-user me-2"></i>用户名</label>
+                </div>
+
+                <div class="form-floating">
+                    <input type="password" class="form-control" id="password" name="password" placeholder="密码" required>
+                    <label for="password"><i class="fas fa-lock me-2"></i>密码</label>
+                </div>
+
+                <button type="submit" class="btn btn-login" id="loginButton">
+                    <i class="fas fa-sign-in-alt me-2"></i><span id="loginButtonText">登录系统</span>
+                </button>
+            </form>
+
+            <!-- 功能特性 -->
+            <div class="feature-highlights">
+                <div class="feature">
+                    <div class="feature-icon">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <div class="feature-text">智能问答</div>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <div class="feature-text">文档分析</div>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <div class="feature-text">快速响应</div>
+                </div>
+            </div>
+
+            <!-- 演示账户 -->
+            <div class="demo-accounts">
+                <div class="demo-title">
+                    <i class="fas fa-key me-2"></i>演示账户
+                </div>
+                <div class="demo-account">
+                    <span class="demo-username">普通用户</span>
+                    <span class="demo-password">demo_user / 123456</span>
+                    <button class="copy-btn" onclick="copyCredentials('user', 'password')">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                </div>
+                <div class="demo-account">
+                    <span class="demo-username">管理员</span>
+                    <span class="demo-password">demo_admin / 123456</span>
+                    <button class="copy-btn" onclick="copyCredentials('admin', 'admin')">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 页脚链接 -->
+            <div class="auth-footer">
+                <p>还没有账户？ <a href="/register" class="auth-link">立即注册</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    // 创建浮动粒子
+    function createParticles() {
+        const particlesContainer = document.getElementById('particles');
+        const particleCount = 15;
+
+        for (let i = 0; i < particleCount; i++) {
+            const particle = document.createElement('div');
+            particle.classList.add('particle');
+
+            // 随机大小和位置
+            const size = Math.random() * 20 + 5;
+            const left = Math.random() * 100;
+            const animationDuration = Math.random() * 20 + 10;
+            const animationDelay = Math.random() * 5;
+
+            particle.style.width = `${size}px`;
+            particle.style.height = `${size}px`;
+            particle.style.left = `${left}%`;
+            particle.style.animationDuration = `${animationDuration}s`;
+            particle.style.animationDelay = `${animationDelay}s`;
+
+            particlesContainer.appendChild(particle);
+        }
+    }
+
+    // 复制账户凭证
+    function copyCredentials(username, password) {
+        const text = `用户名: ${username}\n密码: ${password}`;
+        navigator.clipboard.writeText(text).then(() => {
+            // 显示复制成功提示
+            const alert = document.createElement('div');
+            alert.className = 'alert alert-success position-fixed top-0 start-50 translate-middle-x mt-3 animate__animated animate__fadeInDown';
+            alert.style.zIndex = '9999';
+            alert.innerHTML = '<i class="fas fa-check-circle me-2"></i>账户信息已复制到剪贴板';
+            document.body.appendChild(alert);
+
+            setTimeout(() => {
+                alert.classList.add('animate__fadeOutUp');
+                setTimeout(() => alert.remove(), 500);
+            }, 2000);
+        });
+    }
+
+    // 显示错误消息
+    function showError(message) {
+        const errorAlert = document.getElementById('errorAlert');
+        const errorMessage = document.getElementById('errorMessage');
+        errorMessage.textContent = message || '用户名或密码错误';
+        errorAlert.style.display = 'block';
+        
+        // 3秒后自动隐藏
+        setTimeout(() => {
+            errorAlert.style.display = 'none';
+        }, 5000);
+    }
+
+    // 隐藏错误消息
+    function hideError() {
+        const errorAlert = document.getElementById('errorAlert');
+        errorAlert.style.display = 'none';
+    }
+
+    // 使用 AJAX 调用 /api/login 接口
+    function loginViaAPI(username, password) {
+        const loginButton = document.getElementById('loginButton');
+        const loginButtonText = document.getElementById('loginButtonText');
+        const originalText = loginButtonText.textContent;
+        
+        // 禁用按钮并显示加载状态
+        loginButton.disabled = true;
+        loginButtonText.textContent = '登录中...';
+        hideError();
+
+        // 调用 API 登录接口
+        fetch('/api/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                username: username,
+                password: password
+            })
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('网络请求失败');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                // 登录成功，显示成功消息并重定向
+                loginButtonText.innerHTML = '<i class="fas fa-check-circle me-2"></i>登录成功，正在跳转...';
+                
+                // 延迟跳转，让用户看到成功消息
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 500);
+            } else {
+                // 登录失败，显示错误消息
+                showError(data.message || '用户名或密码错误');
+                loginButton.disabled = false;
+                loginButtonText.textContent = originalText;
+            }
+        })
+        .catch(error => {
+            console.error('登录错误:', error);
+            showError('登录失败，请稍后重试');
+            loginButton.disabled = false;
+            loginButtonText.textContent = originalText;
+        });
+    }
+
+    // 页面加载完成后初始化
+    document.addEventListener('DOMContentLoaded', function() {
+        createParticles();
+
+        // 为输入框添加动画效果
+        const inputs = document.querySelectorAll('.form-control');
+        inputs.forEach(input => {
+            input.addEventListener('focus', function() {
+                this.parentElement.classList.add('animate__pulse');
+            });
+
+            input.addEventListener('blur', function() {
+                this.parentElement.classList.remove('animate__pulse');
+            });
+        });
+
+        // 处理表单提交 - 使用 AJAX 方式
+        const loginForm = document.getElementById('loginForm');
+        if (loginForm) {
+            loginForm.addEventListener('submit', function(e) {
+                e.preventDefault(); // 阻止默认的表单提交
+
+                const username = document.getElementById('username').value.trim();
+                const password = document.getElementById('password').value;
+
+                // 基本验证
+                if (!username || !password) {
+                    showError('请输入用户名和密码');
+                    return;
+                }
+
+                // 使用 AJAX 方式调用 /api/login
+                loginViaAPI(username, password);
+            });
+        }
+
+        // Enter 键提交
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && (e.target.id === 'username' || e.target.id === 'password')) {
+                const loginForm = document.getElementById('loginForm');
+                if (loginForm) {
+                    loginForm.dispatchEvent(new Event('submit'));
+                }
+            }
+        });
+    });
+</script>
+</body>
+</html>

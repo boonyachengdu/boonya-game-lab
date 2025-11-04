@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>幸运投注游戏 - Spring Boot</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --success-gradient: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            --danger-gradient: linear-gradient(135deg, #ee0979 0%, #ff6a00 100%);
+            --dark-bg: #0f0f23;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --text-light: #e9ecef;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--dark-bg);
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            min-height: 100vh;
+            color: var(--text-light);
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* 背景动画 */
+        .background-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background:
+                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(120, 219, 226, 0.1) 0%, transparent 50%);
+            animation: backgroundShift 20s ease-in-out infinite;
+        }
+
+        @keyframes backgroundShift {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.1) rotate(180deg); }
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .game-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 2.5rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            transition: all 0.3s ease;
+        }
+
+        .game-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 35px 60px -12px rgba(0, 0, 0, 0.6);
+        }
+
+        .game-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .balance-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .balance-card {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .balance-card:hover {
+            background: rgba(255, 255, 255, 0.12);
+            transform: scale(1.02);
+        }
+
+        .balance-label {
+            font-size: 0.9rem;
+            color: #adb5bd;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .balance-value {
+            font-size: 2rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .banker-balance .balance-value {
+            background: var(--danger-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .player-balance .balance-value {
+            background: var(--success-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .bet-form {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+
+        .input-group-custom {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .input-wrapper {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .input-wrapper input {
+            width: 100%;
+            padding: 1rem 1.5rem;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            color: var(--text-light);
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+        }
+
+        .input-wrapper input:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(102, 126, 234, 0.6);
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+
+        .input-wrapper input::placeholder {
+            color: #adb5bd;
+        }
+
+        .btn-group-custom {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-custom {
+            flex: 1;
+            min-width: 150px;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary-custom {
+            background: var(--primary-gradient);
+            color: white;
+        }
+
+        .btn-primary-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-success-custom {
+            background: var(--success-gradient);
+            color: white;
+        }
+
+        .btn-success-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(56, 239, 125, 0.4);
+        }
+
+        .btn-custom:active {
+            transform: translateY(0);
+        }
+
+        .btn-custom:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .result-container {
+            margin-top: 2rem;
+            min-height: 80px;
+        }
+
+        .result-message {
+            padding: 1.5rem;
+            border-radius: 12px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            text-align: center;
+            animation: slideIn 0.5s ease;
+            display: none;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-success {
+            background: rgba(56, 239, 125, 0.2);
+            border: 1px solid rgba(56, 239, 125, 0.5);
+            color: #38ef7d;
+        }
+
+        .result-danger {
+            background: rgba(238, 9, 121, 0.2);
+            border: 1px solid rgba(238, 9, 121, 0.5);
+            color: #ee0979;
+        }
+
+        .result-warning {
+            background: rgba(255, 193, 7, 0.2);
+            border: 1px solid rgba(255, 193, 7, 0.5);
+            color: #ffc107;
+        }
+
+        .auto-bet-indicator {
+            display: none;
+            margin-top: 1rem;
+            padding: 1rem;
+            background: rgba(102, 126, 234, 0.2);
+            border-radius: 12px;
+            text-align: center;
+            color: #667eea;
+        }
+
+        .auto-bet-indicator.active {
+            display: block;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .stats-section {
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 1rem;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #adb5bd;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-light);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .game-title {
+                font-size: 2rem;
+            }
+
+            .balance-container {
+                grid-template-columns: 1fr;
+            }
+
+            .input-group-custom {
+                flex-direction: column;
+            }
+
+            .btn-group-custom {
+                flex-direction: column;
+            }
+        }
+
+        /* 加载动画 */
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- 背景动画 -->
+    <div class="background-animation"></div>
+
+<div class="container">
+        <div class="game-card">
+            <h1 class="game-title">
+                <i class="fas fa-dice"></i> 幸运投注游戏
+            </h1>
+            <p class="text-center text-muted mb-4">3% 赔率 | Spring Boot 游戏平台</p>
+
+            <!-- 余额显示 -->
+            <div class="balance-container">
+                <div class="balance-card banker-balance">
+                    <div class="balance-label">
+                        <i class="fas fa-university"></i> 庄家余额
+                    </div>
+                    <div class="balance-value">
+                        ¥<span id="bankerBalance" th:text="${#numbers.formatDecimal(bankerBalance, 1, 2)}">10000.00</span>
+                    </div>
+                </div>
+                <div class="balance-card player-balance">
+                    <div class="balance-label">
+                        <i class="fas fa-user"></i> 玩家余额
+                    </div>
+                    <div class="balance-value">
+                        ¥<span id="balance" th:text="${#numbers.formatDecimal(balance, 1, 2)}">1000.00</span>
+                    </div>
+                </div>
+    </div>
+
+            <!-- 投注表单 -->
+    <div class="bet-form">
+                <div class="input-group-custom">
+                    <div class="input-wrapper">
+        <input type="number" id="amount" step="0.01" min="0.01" placeholder="输入投注金额">
+                    </div>
+                </div>
+                <div class="btn-group-custom">
+                    <button class="btn-custom btn-primary-custom" onclick="placeBet()" id="betButton">
+                        <i class="fas fa-coins"></i> 立即投注
+                    </button>
+                    <button class="btn-custom btn-success-custom" onclick="toggleAutoBet()" id="autoBetButton">
+                        <i class="fas fa-play"></i> <span id="autoBetText">自动投注</span>
+                    </button>
+                </div>
+                <div class="auto-bet-indicator" id="autoBetIndicator">
+                    <i class="fas fa-spinner fa-spin"></i> 自动投注中...
+                </div>
+            </div>
+
+            <!-- 结果显示 -->
+            <div class="result-container">
+                <div id="result" class="result-message"></div>
+    </div>
+
+            <!-- 统计信息 -->
+            <div class="stats-section">
+                <div class="row">
+                    <div class="col-md-4 stat-item">
+                        <div class="stat-label">总投注次数</div>
+                        <div class="stat-value" id="totalBets">0</div>
+                    </div>
+                    <div class="col-md-4 stat-item">
+                        <div class="stat-label">获胜次数</div>
+                        <div class="stat-value text-success" id="winCount">0</div>
+                    </div>
+                    <div class="col-md-4 stat-item">
+                        <div class="stat-label">胜率</div>
+                        <div class="stat-value text-info" id="winRate">0%</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+</div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+        let autoBetInterval = null;
+        let totalBets = 0;
+        let winCount = 0;
+
+    function placeBet() {
+        const amount = document.getElementById('amount').value;
+            const betButton = document.getElementById('betButton');
+            const originalText = betButton.innerHTML;
+
+            if (!amount || parseFloat(amount) <= 0) {
+                showResult('请输入有效的投注金额', 'warning');
+                return;
+            }
+
+            // 禁用按钮并显示加载状态
+            betButton.disabled = true;
+            betButton.innerHTML = '<span class="spinner"></span> 投注中...';
+
+        fetch('/bet', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: 'amount=' + encodeURIComponent(amount)
+        })
+            .then(response => response.json())
+            .then(data => {
+                    totalBets++;
+                const resultDiv = document.getElementById('result');
+                    
+                if (data.success) {
+                        // 更新余额（带动画效果）
+                        updateBalance('balance', data.balance);
+                        updateBalance('bankerBalance', data.bankerBalance);
+                        
+                        // 显示结果
+                        const isWin = data.message.includes('获胜') || data.message.includes('成功');
+                        if (isWin) {
+                            winCount++;
+                            showResult(data.message, 'success');
+                        } else {
+                            showResult(data.message, 'danger');
+                        }
+                        
+                        // 更新统计
+                        updateStats();
+                    } else {
+                        showResult(data.message, 'warning');
+                    }
+                    
+                    // 恢复按钮
+                    betButton.disabled = false;
+                    betButton.innerHTML = originalText;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showResult('投注失败，请稍后重试', 'danger');
+                    betButton.disabled = false;
+                    betButton.innerHTML = originalText;
+                });
+        }
+
+        function updateBalance(elementId, newValue) {
+            const element = document.getElementById(elementId);
+            const oldValue = parseFloat(element.textContent.replace(/[^0-9.]/g, ''));
+            const targetValue = parseFloat(newValue);
+            const diff = targetValue - oldValue;
+            const duration = 500; // 动画时长（毫秒）
+            const steps = 30;
+            const stepValue = diff / steps;
+            let currentStep = 0;
+
+            const timer = setInterval(() => {
+                currentStep++;
+                const currentValue = oldValue + (stepValue * currentStep);
+                
+                if (currentStep >= steps) {
+                    element.textContent = targetValue.toFixed(2);
+                    clearInterval(timer);
+                } else {
+                    element.textContent = currentValue.toFixed(2);
+                }
+            }, duration / steps);
+        }
+
+        function showResult(message, type) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.className = `result-message result-${type}`;
+            resultDiv.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : type === 'danger' ? 'times-circle' : 'exclamation-circle'}"></i> ${message}`;
+            resultDiv.style.display = 'block';
+            
+            // 3秒后自动隐藏成功/失败消息
+            if (type !== 'warning') {
+                setTimeout(() => {
+                    resultDiv.style.display = 'none';
+                }, 3000);
+            }
+        }
+
+        function toggleAutoBet() {
+            const autoBetButton = document.getElementById('autoBetButton');
+            const autoBetText = document.getElementById('autoBetText');
+            const autoBetIndicator = document.getElementById('autoBetIndicator');
+            const amount = document.getElementById('amount').value;
+
+            if (!amount || parseFloat(amount) <= 0) {
+                showResult('请先输入投注金额', 'warning');
+                return;
+            }
+
+            if (autoBetInterval) {
+                // 停止自动投注
+                clearInterval(autoBetInterval);
+                autoBetInterval = null;
+                autoBetButton.innerHTML = '<i class="fas fa-play"></i> <span id="autoBetText">自动投注</span>';
+                autoBetIndicator.classList.remove('active');
+                autoBetButton.classList.remove('btn-danger-custom');
+                autoBetButton.classList.add('btn-success-custom');
+            } else {
+                // 开始自动投注
+                autoBetInterval = setInterval(placeBet, 1000);
+                autoBetText.textContent = '停止自动投注';
+                autoBetIndicator.classList.add('active');
+                autoBetButton.classList.remove('btn-success-custom');
+                autoBetButton.classList.add('btn-danger-custom');
+                autoBetButton.innerHTML = '<i class="fas fa-stop"></i> <span id="autoBetText">停止自动投注</span>';
+            }
+        }
+
+        function updateStats() {
+            document.getElementById('totalBets').textContent = totalBets;
+            document.getElementById('winCount').textContent = winCount;
+            const winRate = totalBets > 0 ? ((winCount / totalBets) * 100).toFixed(1) : 0;
+            document.getElementById('winRate').textContent = winRate + '%';
+        }
+
+        // Enter 键提交
+        document.getElementById('amount').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                placeBet();
+            }
+        });
+
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            updateStats();
+        });
+</script>
+</body>
+</html>

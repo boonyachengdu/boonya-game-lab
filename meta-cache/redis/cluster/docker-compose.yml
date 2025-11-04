@@ -1,0 +1,83 @@
+version: '3.8'
+services:
+  redis-node1:
+    image: redis:7-alpine
+    container_name: redis-node1
+    ports:
+      - "7001:6379"
+      - "17001:16379"
+    volumes:
+      - ./node1/data:/data
+      - ./node1/conf/redis.conf:/usr/local/etc/redis/redis.conf
+    command: redis-server /usr/local/etc/redis/redis.conf
+    networks:
+      - redis-cluster-net
+
+  redis-node2:
+    image: redis:7-alpine
+    container_name: redis-node2
+    ports:
+      - "7002:6379"
+      - "17002:16379"
+    volumes:
+      - ./node2/data:/data
+      - ./node2/conf/redis.conf:/usr/local/etc/redis/redis.conf
+    command: redis-server /usr/local/etc/redis/redis.conf
+    networks:
+      - redis-cluster-net
+
+  redis-node3:
+    image: redis:7-alpine
+    container_name: redis-node3
+    ports:
+      - "7003:6379"
+      - "17003:16379"
+    volumes:
+      - ./node3/data:/data
+      - ./node3/conf/redis.conf:/usr/local/etc/redis/redis.conf
+    command: redis-server /usr/local/etc/redis/redis.conf
+    networks:
+      - redis-cluster-net
+
+  redis-node4:
+    image: redis:7-alpine
+    container_name: redis-node4
+    ports:
+      - "7004:6379"
+      - "17004:16379"
+    volumes:
+      - ./node4/data:/data
+      - ./node4/conf/redis.conf:/usr/local/etc/redis/redis.conf
+    command: redis-server /usr/local/etc/redis/redis.conf
+    networks:
+      - redis-cluster-net
+
+  redis-node5:
+    image: redis:7-alpine
+    container_name: redis-node5
+    ports:
+      - "7005:6379"
+      - "17005:16379"
+    volumes:
+      - ./node5/data:/data
+      - ./node5/conf/redis.conf:/usr/local/etc/redis/redis.conf
+    command: redis-server /usr/local/etc/redis/redis.conf
+    networks:
+      - redis-cluster-net
+
+  redis-node6:
+    image: redis:7-alpine
+    container_name: redis-node6
+    ports:
+      - "7006:6379"
+      - "17006:16379"
+    volumes:
+      - ./node6/data:/data
+      - ./node6/conf/redis.conf:/usr/local/etc/redis/redis.conf
+    command: redis-server /usr/local/etc/redis/redis.conf
+    networks:
+      - redis-cluster-net
+
+networks:
+  redis-cluster-net:
+    driver: bridge

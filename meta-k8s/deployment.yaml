@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: meta-k8s
+spec:
+  replicas: 2 # 希望运行的Pod副本数
+  selector:
+    matchLabels:
+      app: meta-k8s
+  template:
+    metadata:
+      labels:
+        app: meta-k8s
+    spec:
+      containers:
+        - name: meta-k8s
+          image: docker.io/boonyadocker/meta-k8s:latest # 替换为你的镜像地址
+          ports:
+            - containerPort: 8080 # 容器端口
+          env: # 可选：设置环境变量
+            - name: JAVA_OPTS
+              value: "-Xmx512m"
+          # 可以添加资源限制和健康检查
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "500m"
+          # 必须开启 Spring Actuator 否则请注释掉/actuator/health相关配置
+          livenessProbe:
+            httpGet:
+              path: /actuator/health # 假设使用Spring Actuator的健康检查端点
+              port: 8080
+            initialDelaySeconds: 90 # 容器启动后多久开始探测
+            periodSeconds: 10 # 执行探测的频率
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 60 # 启动后获取Pod是否正常启动命令: kubectl get pods  ,查看READY是否式1/1 而不是0/1
+            periodSeconds: 10
+---
+# Service部分 文档分隔符 定义了Pod的Service访问方式
+apiVersion: v1
+kind: Service
+metadata:
+  name: meta-k8s-service
+spec:
+  selector:
+    app: meta-k8s
+  ports:
+    - protocol: TCP
+      port: 80 # Service端口
+      targetPort: 8080 # 容器端口
+  # type: ClusterIP # 默认类型，集群内访问IP
+  #------云提供商LoadBalancer 才会生成EXTERNAL-IP
+  type: NodePort # 如果希望从集群外部访问，可以使用LoadBalancer（云提供商通常支持）或NodePort(建议本地 长期使用时)
+  #------云环境打开上面type: LoadBalancer 注释
+  # 获取浏览器访问IP地址方式
+  # kubectl get svc boonya-game-lab-service
+  #`kubectl get svc boonya-game-lab-service -w
