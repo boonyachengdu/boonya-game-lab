@@ -1,0 +1,41 @@
+# src/main/resources/application.yml
+spring:
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+  thymeleaf:
+    cache: false
+    prefix: classpath:/templates/
+  web:
+    resources:
+      static-locations: classpath:/static/
+
+# 阿里百炼 api-key 注意不要泄漏 给自己造成损失
+# 建议您把API Key配置到环境变量，从而避免在代码里显式地配置API Key，降低泄漏风险。
+dashscope:
+  # 下面的api-key是测试用的，请勿用于生产环境，请自行申请。
+  api-key: "sk-c19c3c1c8bdc49548064b247893e6375"
+
+chroma:
+  url: "http://localhost:8000"
+  collection: "document_embeddings"
+
+milvus:
+  host: "localhost"
+  port: 19530
+  collection: "document_embeddings"
+
+elasticsearch:
+  url: "http://localhost:9200"
+  index: "document_embeddings"
+
+vector:
+  store: "chroma"
+
+server:
+  port: 8080
+
+# 文件上传配置
+app:
+  upload-dir: "uploads"

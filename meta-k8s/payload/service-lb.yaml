@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: meta-k8s-service
+spec:
+  type: LoadBalancer   # 关键：设置类型为 LoadBalancer
+  selector:
+    app: meta-k8s
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080

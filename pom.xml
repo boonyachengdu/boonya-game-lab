@@ -9,9 +9,8 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
-    <groupId>com.boonya.game.lab</groupId>
-    <artifactId>boonya-game-lab</artifactId>
-    <name>boonya-game-lab</name>
+    <groupId>com.metaforge</groupId>
+    <artifactId>metaforge</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
@@ -19,15 +18,17 @@
         <java.version>17</java.version>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
-        <guva.version>32.1.1-jre</guva.version>
         <lombok.version>1.18.26</lombok.version>
     </properties>
 
     <modules>
-        <module>boonya-game-ai</module>
-        <module>boonya-game-bigdata</module>
-       <!-- <module>boonya-game-jmh</module>-->
-        <module>boonya-game-langchain4j</module>
+        <module>meta-bigdata</module>
+       <!-- <module>meta-jmh</module>-->
+        <module>meta-ai</module>
+        <module>meta-auth</module>
+        <module>meta-cache</module>
+        <module>meta-k8s</module>
+        <module>meta-message</module>
     </modules>
 
     <dependencyManagement>
@@ -48,25 +49,8 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-thymeleaf</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-actuator</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
         </dependency>
 
         <!--异步非阻塞编程webflux-->
@@ -87,11 +71,6 @@
         <dependency>
             <groupId>io.micrometer</groupId>
             <artifactId>micrometer-registry-prometheus</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
         </dependency>
 
         <dependency>
