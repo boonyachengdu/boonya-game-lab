@@ -315,7 +315,8 @@
 
             <!-- 登录表单 -->
             <form id="loginForm" th:action="@{/api/login}" method="post">
-                
+                <!-- CSRF Token (用于传统表单提交) -->
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                 <!-- 动态错误提示 -->
                 <div id="errorAlert" class="alert alert-danger animate__animated animate__shakeX" style="display: none;">
                     <i class="fas fa-exclamation-triangle me-2"></i><span id="errorMessage">用户名或密码错误</span>

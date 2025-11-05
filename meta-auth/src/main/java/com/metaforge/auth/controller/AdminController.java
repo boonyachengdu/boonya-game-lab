@@ -136,4 +136,9 @@ public class AdminController {
 
         return "redirect:/admin/users";
     }
+
+    @GetMapping("/users/{id}")
+    public User getUserById(@PathVariable Long id) {
+        return userService.getUserById(id);
+    }
 }

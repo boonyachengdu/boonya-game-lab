@@ -27,7 +27,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -45,7 +44,8 @@ public class AuthController {
     @GetMapping("/login")
     public String showLoginPage(@RequestParam(value = "error", required = false) String error,
                                 @RequestParam(value = "logout", required = false) String logout,
-                                Model model) {
+                                Model model, HttpServletRequest request) {
+        request.getSession(true);// 解决退出之后无法正常访问登录页面问题
         Map<String, Object> param = Maps.newConcurrentMap();
         param.put("error", false);
         param.put("logout", false);
