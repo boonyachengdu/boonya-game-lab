@@ -1,5 +1,6 @@
 package com.metaforge.auth.controller;
 
+import com.google.common.collect.Maps;
 import com.metaforge.auth.dto.request.LoginRequest;
 import com.metaforge.auth.dto.request.RegisterRequest;
 import com.metaforge.auth.entity.Role;
@@ -45,12 +46,17 @@ public class AuthController {
     public String showLoginPage(@RequestParam(value = "error", required = false) String error,
                                 @RequestParam(value = "logout", required = false) String logout,
                                 Model model) {
+        Map<String, Object> param = Maps.newConcurrentMap();
+        param.put("error", false);
+        param.put("logout", false);
+
         if (error != null) {
-            model.addAttribute("error", true);
+            param.put("error", true);
         }
         if (logout != null) {
-            model.addAttribute("logout", true);
+            param.put("logout", true);
         }
+        model.addAttribute("param", param);
         return "login";
     }
 
