@@ -1,10 +1,12 @@
 package com.metaforge.auth.controller;
 
 import com.google.common.collect.Maps;
+import com.metaforge.auth.component.ApplicationContextHelper;
 import com.metaforge.auth.dto.request.LoginRequest;
 import com.metaforge.auth.dto.request.RegisterRequest;
 import com.metaforge.auth.entity.Role;
 import com.metaforge.auth.entity.User;
+import com.metaforge.auth.component.event.LoginEvent;
 import com.metaforge.auth.service.AuthService;
 import com.metaforge.auth.service.RoleService;
 import com.metaforge.auth.service.UserService;
@@ -45,7 +47,9 @@ public class AuthController {
     public String showLoginPage(@RequestParam(value = "error", required = false) String error,
                                 @RequestParam(value = "logout", required = false) String logout,
                                 Model model, HttpServletRequest request) {
-        request.getSession(true);// 解决退出之后无法正常访问登录页面问题
+        // 解决退出之后无法正常访问登录页面问题
+        request.getSession(true);
+
         Map<String, Object> param = Maps.newConcurrentMap();
         param.put("error", false);
         param.put("logout", false);
@@ -88,6 +92,8 @@ public class AuthController {
             log.info("API login successful for user: {} {}", loginRequest.getUsername(), auth.getAuthorities());
 
             userService.recordSuccessfulLogin(loginRequest.getUsername());
+
+            ApplicationContextHelper.getApplicationContext().publishEvent(new LoginEvent(new Object()));
         } else {
             log.error("API login failed for user: {}", loginRequest.getUsername());
             response.put("success", false);
@@ -172,10 +178,10 @@ public class AuthController {
 
             log.info("新用户注册成功: {}", newUser.getUsername());
 
+
             // 注册成功，重定向到登录页面
             redirectAttributes.addFlashAttribute("success", true);
             return "redirect:/login";
-
         } catch (Exception e) {
             log.error("用户注册失败: {}", e.getMessage(), e);
             model.addAttribute("error", "注册失败: " + e.getMessage());

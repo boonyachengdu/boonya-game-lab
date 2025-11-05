@@ -3,7 +3,6 @@ package com.metaforage.cache.impl;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.metaforage.cache.Cache;
 import com.metaforage.cache.mode.CacheConfig;
-import com.metaforage.cache.mode.CacheStats;
 
 import java.util.Collection;
 import java.util.Set;
@@ -15,7 +14,6 @@ import java.util.concurrent.TimeUnit;
 public class CaffeineCache<K, V> implements Cache<K, V> {
 
     private final com.github.benmanes.caffeine.cache.Cache<K, V> cache;
-    private final CacheStats stats;
 
     public CaffeineCache(CacheConfig config) {
         Caffeine<Object, Object> builder = Caffeine.newBuilder();
@@ -37,7 +35,6 @@ public class CaffeineCache<K, V> implements Cache<K, V> {
         }
 
         this.cache = builder.build();
-        this.stats = new CacheStats(0, 0, 0, 0, 0, 0); // Caffeine有内置统计
     }
 
     @Override
@@ -144,22 +141,5 @@ public class CaffeineCache<K, V> implements Cache<K, V> {
     @Override
     public long decrement(K key, long delta) {
         return increment(key, -delta);
-    }
-
-    @Override
-    public CacheStats getStats() {
-        if (cache instanceof com.github.benmanes.caffeine.cache.Cache) {
-            com.github.benmanes.caffeine.cache.stats.CacheStats caffeineStats =
-                    ((com.github.benmanes.caffeine.cache.Cache<K, V>) cache).stats();
-            return new CacheStats(
-                    caffeineStats.hitCount(),
-                    caffeineStats.missCount(),
-                    caffeineStats.loadSuccessCount(),
-                    caffeineStats.loadFailureCount(),
-                    caffeineStats.totalLoadTime(),
-                    caffeineStats.evictionCount()
-            );
-        }
-        return stats;
     }
 }

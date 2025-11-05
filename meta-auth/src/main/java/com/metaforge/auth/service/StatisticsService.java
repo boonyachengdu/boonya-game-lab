@@ -1,6 +1,5 @@
 package com.metaforge.auth.service;
 
-import com.metaforge.auth.dto.response.Statistics;
 import com.metaforge.auth.repository.RoleRepository;
 import com.metaforge.auth.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -35,13 +34,7 @@ public class StatisticsService {
         return userRepository.countByAccountNonLocked(false);
     }
 
-    public Statistics getStatistics() {
-        Statistics statistics = new Statistics();
-        statistics.setTotalUsers(getTotalUsers());
-        statistics.setTotalRoles(getTotalRoles());
-        statistics.setActiveUsers(getTotalEnabledUsers());
-        statistics.setTotalUsers(getTotalUsers());
-        statistics.setTodayLogins(userRepository.countByLastLoginAfter(LocalDateTime.now().minusDays(1)));
-        return statistics;
+    public long getTodayLogins() {
+        return userRepository.countByLastLoginAfter(LocalDateTime.now().minusDays(1));
     }
 }

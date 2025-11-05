@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -150,10 +150,10 @@
                 <li class="nav-item">
                     <a class="nav-link" th:href="@{/profile}">个人资料</a>
                 </li>
-                <li class="nav-item" sec:authorize="hasRole('ADMIN')">
+                <li class="nav-item" th:if="${isAdmin}" sec:authorize="hasRole('ADMIN')">
                     <a class="nav-link" th:href="@{/admin/users}">用户管理</a>
                 </li>
-                <li class="nav-item" sec:authorize="hasRole('ADMIN')">
+                <li class="nav-item"  th:if="${isAdmin}" sec:authorize="hasRole('ADMIN')">
                     <a class="nav-link" th:href="@{/admin/roles}">角色管理</a>
                 </li>
             </ul>
@@ -359,10 +359,10 @@
                     <a th:href="@{/profile}" class="btn btn-outline-primary">
                         <i class="bi bi-person me-2"></i>个人资料
                     </a>
-                    <a th:href="@{/admin/users}" class="btn btn-outline-success" sec:authorize="hasRole('ADMIN')">
+                    <a th:href="@{/admin/users}" th:if="${isAdmin}" class="btn btn-outline-success"  sec:authorize="hasRole('ADMIN')">
                         <i class="bi bi-people me-2"></i>用户管理
                     </a>
-                    <a th:href="@{/admin/roles}" class="btn btn-outline-info" sec:authorize="hasRole('ADMIN')">
+                    <a th:href="@{/admin/roles}" th:if="${isAdmin}" class="btn btn-outline-info" sec:authorize="hasRole('ADMIN')">
                         <i class="bi bi-shield-lock me-2"></i>角色管理
                     </a>
                     <a href="#" class="btn btn-outline-warning">

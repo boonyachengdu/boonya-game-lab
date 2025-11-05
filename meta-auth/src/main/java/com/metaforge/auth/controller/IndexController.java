@@ -2,6 +2,7 @@ package com.metaforge.auth.controller;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.metaforge.auth.component.cache.StatisticsCache;
 import com.metaforge.auth.dto.response.Statistics;
 import com.metaforge.auth.entity.User;
 import com.metaforge.auth.service.StatisticsService;
@@ -23,7 +24,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class IndexController {
 
-    private final StatisticsService statisticsService;
+    private final StatisticsCache statisticsCache;
     private final UserService userService;
 
     /**
@@ -41,7 +42,11 @@ public class IndexController {
         model.addAttribute("user", user);
         model.addAttribute("username", username);
         model.addAttribute("recentActivities", Lists.newArrayList());
-        model.addAttribute("stats", statisticsService.getStatistics());
+        model.addAttribute("stats", statisticsCache.getStatistics());
+
+        boolean isAdmin = user.getRoles().stream()
+                .anyMatch(role -> "ADMIN".equals(role.getCode()));
+        model.addAttribute("isAdmin", isAdmin);
         return "index";
     }
 
@@ -60,6 +65,10 @@ public class IndexController {
         userStats.put("lastActiveDays", 20);
         userStats.put("securityScore", 95);
         model.addAttribute("userStats", userStats);
+
+        boolean isAdmin = user.getRoles().stream()
+                .anyMatch(role -> "ADMIN".equals(role.getCode()));
+        model.addAttribute("isAdmin", isAdmin);
         return "profile";
     }
 
@@ -69,6 +78,6 @@ public class IndexController {
     @GetMapping("/api/stats")
     @ResponseBody
     public Statistics getStats() {
-        return statisticsService.getStatistics();
+        return statisticsCache.getStatistics();
     }
 }

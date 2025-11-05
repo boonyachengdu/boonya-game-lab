@@ -1,7 +1,6 @@
 package com.metaforage.cache.impl;
 
 import com.metaforage.cache.Cache;
-import com.metaforage.cache.mode.CacheStats;
 import org.springframework.data.redis.core.RedisTemplate;
 
 import java.util.*;
@@ -14,12 +13,10 @@ public class RedisCache<K, V> implements Cache<K, V> {
 
     private final RedisTemplate<K, V> redisTemplate;
     private final String cacheName;
-    private final CacheStats stats;
 
     public RedisCache(RedisTemplate<K, V> redisTemplate, String cacheName) {
         this.redisTemplate = redisTemplate;
         this.cacheName = cacheName;
-        this.stats = new CacheStats(0, 0, 0, 0, 0, 0); // Redis需要自定义统计
     }
 
     private K buildKey(K key) {
@@ -144,11 +141,5 @@ public class RedisCache<K, V> implements Cache<K, V> {
     public long decrement(K key, long delta) {
         K fullKey = buildKey(key);
         return redisTemplate.opsForValue().decrement(fullKey, delta);
-    }
-
-    @Override
-    public CacheStats getStats() {
-        // Redis需要自定义统计逻辑
-        return stats;
     }
 }

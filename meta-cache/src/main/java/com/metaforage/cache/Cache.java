@@ -1,7 +1,5 @@
 package com.metaforage.cache;
 
-import com.metaforage.cache.mode.CacheStats;
-
 import java.util.Collection;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -98,9 +96,4 @@ public interface Cache<K, V> {
      * 原子递减
      */
     long decrement(K key, long delta);
-
-    /**
-     * 获取缓存统计信息
-     */
-    CacheStats getStats();
 }

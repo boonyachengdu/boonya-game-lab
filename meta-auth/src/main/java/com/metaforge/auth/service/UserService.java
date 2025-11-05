@@ -1,15 +1,12 @@
 package com.metaforge.auth.service;
 
-import com.metaforage.cache.Cache;
-import com.metaforage.cache.component.CacheManager;
-import com.metaforage.cache.mode.CacheConfig;
-import com.metaforage.cache.mode.CacheMode;
+import com.metaforge.auth.component.ApplicationContextHelper;
+import com.metaforge.auth.component.cache.UserCache;
+import com.metaforge.auth.component.event.UserChangeEvent;
 import com.metaforge.auth.entity.Role;
 import com.metaforge.auth.entity.User;
 import com.metaforge.auth.repository.RoleRepository;
 import com.metaforge.auth.repository.UserRepository;
-import jakarta.annotation.PostConstruct;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -31,30 +28,17 @@ public class UserService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
-    private final CacheManager cacheManager;
-    private final CacheConfig cacheConfig;
-
-    @Getter
-    private Cache<Long, User> userCache;
-
-    @PostConstruct
-    public void init() {
-        if (cacheConfig.getCacheMode().equals(CacheMode.LOCAL)) {
-            userCache = cacheManager.getLocalCache("users", cacheConfig);
-        } else {
-            userCache = cacheManager.getDistributedCache("users");
-        }
-    }
+    private final UserCache userCache;
 
     /**
      * 根据用户ID获取用户信息
      */
     public User getUserById(Long userId) {
-        User user = userCache.get(userId);
+        User user = userCache.getCache().get(userId);
         if (user == null) {
             user = userRepository.findById(userId)
                     .orElseThrow(() -> new IllegalArgumentException("用户不存在: " + userId));
-            userCache.put(userId, user);
+            userCache.getCache().put(userId, user);
         }
         return user;
     }
@@ -112,6 +96,9 @@ public class UserService {
         User savedUser = userRepository.save(user);
         log.info("用户创建成功: {}, 角色数量: {}", username, savedUser.getRoles().size());
 
+        ApplicationContextHelper.getApplicationContext().publishEvent(
+                new UserChangeEvent(new UserChangeEvent.UserChangeEventSource(savedUser.getId())));
+
         return savedUser;
     }
 
@@ -145,7 +132,10 @@ public class UserService {
 
         user.setUpdatedAt(LocalDateTime.now());
         User updatedUser = userRepository.save(user);
-        userCache.evict(userId); // 清除缓存
+
+        ApplicationContextHelper.getApplicationContext().publishEvent(
+                new UserChangeEvent(new UserChangeEvent.UserChangeEventSource(
+                        updatedUser.getId())));
         log.info("用户更新成功: {}, 角色数量: {}", user.getUsername(), updatedUser.getRoles().size());
 
         return updatedUser;
@@ -163,7 +153,9 @@ public class UserService {
 
         String username = user.getUsername();
         userRepository.delete(user);
-        userCache.evict(userId); // 清除缓存
+
+        ApplicationContextHelper.getApplicationContext().publishEvent(
+                new UserChangeEvent(new UserChangeEvent.UserChangeEventSource(user.getId())));
         log.info("用户删除成功: {}", username);
     }
 
@@ -180,7 +172,6 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(newPassword));
         user.setUpdatedAt(LocalDateTime.now());
         userRepository.save(user);
-        userCache.evict(userId); // 清除缓存
         log.info("用户密码重置成功: {}", user.getUsername());
     }
 
@@ -203,7 +194,6 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(newPassword));
         user.setUpdatedAt(LocalDateTime.now());
         userRepository.save(user);
-        userCache.evict(user.getId()); // 清除缓存
         log.info("用户 {} 密码修改成功", username);
         return true;
     }
@@ -217,7 +207,9 @@ public class UserService {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("用户不存在: " + username));
         userRepository.updateAccountLockStatus(username, !locked);
-        userCache.evict(user.getId()); // 清除缓存
+
+        ApplicationContextHelper.getApplicationContext().publishEvent(
+                new UserChangeEvent(new UserChangeEvent.UserChangeEventSource(user.getId())));
     }
 
     /**
@@ -233,7 +225,9 @@ public class UserService {
         user.setEnabled(enabled);
         user.setUpdatedAt(LocalDateTime.now());
         userRepository.save(user);
-        userCache.evict(userId); // 清除缓存
+
+        ApplicationContextHelper.getApplicationContext().publishEvent(
+                new UserChangeEvent(new UserChangeEvent.UserChangeEventSource(user.getId())));
     }
 
     /**
@@ -249,7 +243,9 @@ public class UserService {
         user.recordLogin();
         user.setUpdatedAt(LocalDateTime.now());
         userRepository.save(user);
-        userCache.evict(user.getId()); // 清除缓存
+
+        ApplicationContextHelper.getApplicationContext().publishEvent(
+                new UserChangeEvent(new UserChangeEvent.UserChangeEventSource(user.getId())));
     }
 
     /**
@@ -268,7 +264,8 @@ public class UserService {
             log.warn("由于多次登录失败，账户已被锁定: {}", username);
         }
 
-        userCache.evict(user.getId()); // 清除缓存
+        ApplicationContextHelper.getApplicationContext().publishEvent(
+                new UserChangeEvent(new UserChangeEvent.UserChangeEventSource(user.getId())));
     }
 
     /**
@@ -281,7 +278,9 @@ public class UserService {
                 .orElseThrow(() -> new IllegalArgumentException("用户不存在: " + username));
         userRepository.updateAccountLockStatus(username, true);
         userRepository.resetLoginAttempts(username);
-        userCache.evict(user.getId()); // 清除缓存
+
+        ApplicationContextHelper.getApplicationContext().publishEvent(
+                new UserChangeEvent(new UserChangeEvent.UserChangeEventSource(user.getId())));
     }
 
     /**
@@ -384,7 +383,10 @@ public class UserService {
             user.getRoles().add(role);
             user.setUpdatedAt(LocalDateTime.now());
             userRepository.save(user);
-            userCache.evict(user.getId());// 清除缓存
+
+            ApplicationContextHelper.getApplicationContext().publishEvent(
+                    new UserChangeEvent(new UserChangeEvent.UserChangeEventSource(user.getId())));
+
             log.info("成功为用户 {} 添加角色: {}", user.getUsername(), roleName);
         } else {
             log.debug("用户 {} 已拥有角色: {}", user.getUsername(), roleName);
@@ -408,7 +410,9 @@ public class UserService {
             user.getRoles().remove(role);
             user.setUpdatedAt(LocalDateTime.now());
             userRepository.save(user);
-            userCache.evict(user.getId()); // 清除缓存
+
+            ApplicationContextHelper.getApplicationContext().publishEvent(
+                    new UserChangeEvent(new UserChangeEvent.UserChangeEventSource(user.getId())));
             log.info("成功为用户 {} 移除角色: {}", user.getUsername(), roleName);
         } else {
             log.debug("用户 {} 不拥有角色: {}", user.getUsername(), roleName);
@@ -465,7 +469,9 @@ public class UserService {
                 user.setEnabled(enabled);
                 user.setUpdatedAt(LocalDateTime.now());
                 userRepository.save(user);
-                userCache.evict(user.getId()); // 清除缓存
+
+                ApplicationContextHelper.getApplicationContext().publishEvent(
+                        new UserChangeEvent(new UserChangeEvent.UserChangeEventSource(user.getId())));
 
                 log.debug("用户 {} 状态已更新为: {}", user.getUsername(), enabled ? "enabled" : "disabled");
             } catch (Exception e) {
@@ -486,55 +492,9 @@ public class UserService {
 
         user.setLastLogin(LocalDateTime.now());
         userRepository.save(user);
-        userCache.evict(user.getId()); // 清除缓存
-    }
 
-    /**
-     * 获取用户统计信息
-     */
-    @Transactional(readOnly = true)
-    public UserStats getUserStats() {
-        long totalUsers = userRepository.count();
-        long enabledUsers = 0; // 需要添加查询方法
-        long lockedUsers = 0;  // 需要添加查询方法
-
-        // 这里需要添加相应的查询方法
-        // enabledUsers = userRepository.countByEnabled(true);
-        // lockedUsers = userRepository.countByAccountNonLocked(false);
-
-        return new UserStats(totalUsers, enabledUsers, lockedUsers);
-    }
-
-    /**
-     * 用户统计信息类
-     */
-    public static class UserStats {
-        private final long totalUsers;
-        private final long enabledUsers;
-        private final long lockedUsers;
-
-        public UserStats(long totalUsers, long enabledUsers, long lockedUsers) {
-            this.totalUsers = totalUsers;
-            this.enabledUsers = enabledUsers;
-            this.lockedUsers = lockedUsers;
-        }
-
-        // Getters
-        public long getTotalUsers() {
-            return totalUsers;
-        }
-
-        public long getEnabledUsers() {
-            return enabledUsers;
-        }
-
-        public long getLockedUsers() {
-            return lockedUsers;
-        }
-
-        public long getDisabledUsers() {
-            return totalUsers - enabledUsers;
-        }
+        ApplicationContextHelper.getApplicationContext().publishEvent(
+                new UserChangeEvent(new UserChangeEvent.UserChangeEventSource(user.getId())));
     }
 
     /**
