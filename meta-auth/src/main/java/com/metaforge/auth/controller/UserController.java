@@ -1,6 +1,5 @@
 package com.metaforge.auth.controller;
 
-import com.metaforge.auth.dto.request.RoleCreateRequest;
 import com.metaforge.auth.dto.request.UserCreateRequest;
 import com.metaforge.auth.entity.Role;
 import com.metaforge.auth.entity.User;
@@ -22,9 +21,9 @@ import java.util.Collections;
 import java.util.List;
 
 @Controller
-@RequestMapping("/admin")
+@RequestMapping("/admin/users")
 @RequiredArgsConstructor
-public class AdminController {
+public class UserController {
 
     private final UserService userService;
 
@@ -33,7 +32,7 @@ public class AdminController {
     /**
      * 用户管理页面
      */
-    @GetMapping("/users")
+    @GetMapping
     public String userManagement(@RequestParam(defaultValue = "1") int page,
                                  @RequestParam(defaultValue = "10") int size,
                                  Model model) {
@@ -48,7 +47,7 @@ public class AdminController {
             model.addAttribute("currentPage", page);
             model.addAttribute("totalPages", userPage.getTotalPages());
             model.addAttribute("roles", roles);
-        }catch (Exception e){
+        } catch (Exception e) {
             // 处理异常，确保模型属性不为空
             model.addAttribute("users", Collections.emptyList());
             model.addAttribute("currentPage", 1);
@@ -62,19 +61,9 @@ public class AdminController {
     }
 
     /**
-     * 角色管理页面
-     */
-    @GetMapping("/roles")
-    public String roleManagement(Model model) {
-        List<Role> roles = roleService.getAllRolesWithUserCount();
-        model.addAttribute("roles", roles);
-        return "admin/role";
-    }
-
-    /**
      * 添加用户
      */
-    @PostMapping("/users")
+    @PostMapping
     public String addUser(@Valid UserCreateRequest request,
                           BindingResult result,
                           RedirectAttributes redirectAttributes) {
@@ -94,31 +83,9 @@ public class AdminController {
     }
 
     /**
-     * 添加角色
-     */
-    @PostMapping("/roles")
-    public String addRole(@Valid RoleCreateRequest request,
-                          BindingResult result,
-                          RedirectAttributes redirectAttributes) {
-        if (result.hasErrors()) {
-            redirectAttributes.addFlashAttribute("error", "表单验证失败");
-            return "redirect:/admin/roles";
-        }
-
-        try {
-            roleService.createRole(request);
-            redirectAttributes.addFlashAttribute("success", "角色创建成功");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "角色创建失败: " + e.getMessage());
-        }
-
-        return "redirect:/admin/roles";
-    }
-
-    /**
      * 启用/禁用用户
      */
-    @PostMapping("/users/{id}/{action}")
+    @PostMapping("/{id}/{action}")
     public String toggleUserStatus(@PathVariable Long id,
                                    @PathVariable String action,
                                    RedirectAttributes redirectAttributes) {
@@ -137,7 +104,7 @@ public class AdminController {
         return "redirect:/admin/users";
     }
 
-    @GetMapping("/users/{id}")
+    @GetMapping("/{id}")
     public User getUserById(@PathVariable Long id) {
         return userService.getUserById(id);
     }

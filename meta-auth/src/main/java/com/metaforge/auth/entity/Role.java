@@ -49,14 +49,13 @@ public class Role {
     @Transient
     private Integer userCount = 0;
 
-    public Role(String name) {
-        this.name = name;
-    }
-
-    public Role(String name, String description) {
-        this.name = name;
-        this.description = description;
-    }
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "role_permission",
+            joinColumns = @JoinColumn(name = "role_id"),
+            inverseJoinColumns = @JoinColumn(name = "permission_id")
+    )
+    private Set<Permission> permissions = new HashSet<>();
 
     public Integer getUserCount() {
         return users.size();
